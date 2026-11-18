@@ -1,0 +1,485 @@
+/* Responsividade transversal — aplica-se depois dos estilos específicos de cada módulo. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.main-content {
+  min-width: 0;
+  width: 100%;
+}
+
+.header,
+.header-content,
+.page-header,
+.user-area,
+.header-actions,
+.filters-bar,
+.filters-section,
+.filters-advanced,
+.filters-title,
+.report-actions,
+.pdf-actions {
+  min-width: 0;
+}
+
+.header-content {
+  width: 100%;
+}
+
+.page-header > *,
+.header-content > *,
+.user-area > * {
+  min-width: 0;
+}
+
+.page-header h1,
+.logo-text h1,
+.modal-title,
+.dashboard-title,
+.chart-title {
+  overflow-wrap: anywhere;
+}
+
+.table-responsive {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.table-responsive table {
+  min-width: 640px;
+}
+
+.chart-wrapper,
+.chart-card,
+.dashboard-card,
+.dashboard-section,
+.card,
+.panel {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.chart-wrapper {
+  overflow: hidden;
+}
+
+canvas {
+  max-width: 100%;
+}
+
+.modal {
+  padding: 0.75rem;
+}
+
+.modal-content {
+  width: min(100%, 1000px);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.modal-body {
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.modal-footer {
+  flex-wrap: wrap;
+}
+
+.form-grid,
+.filters-grid,
+.info-grid,
+.detalhes-grid {
+  min-width: 0;
+}
+
+.form-control,
+.form-select,
+select,
+input,
+textarea {
+  max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    padding: 1.25rem;
+  }
+
+  .header-content {
+    padding: 0.75rem 1rem;
+  }
+
+  .logo-text h1 {
+    font-size: 1rem;
+  }
+
+  .logo-text span {
+    font-size: 0.72rem;
+  }
+
+  .user-area {
+    gap: 0.45rem;
+  }
+
+  .welcome-message {
+    display: none;
+  }
+
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .page-header > div:last-child,
+  .page-header > .header-actions,
+  .page-header > .report-actions {
+    width: 100%;
+  }
+
+  .page-header > div:last-child:not(:first-child),
+  .header-actions,
+  .report-actions,
+  .pdf-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .page-header button,
+  .header-actions button,
+  .report-actions button,
+  .pdf-actions button {
+    min-height: 42px;
+  }
+
+  .filters-bar,
+  .filters-section,
+  .filters-advanced {
+    gap: 0.75rem;
+  }
+
+  .filters-bar > *,
+  .filters-section > *,
+  .filters-advanced > * {
+    min-width: 0;
+  }
+
+  .filters-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tabs,
+  .tabs-principais,
+  .tabs-container,
+  .sub-tabs {
+    max-width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar,
+  .tabs-principais::-webkit-scrollbar,
+  .tabs-container::-webkit-scrollbar,
+  .sub-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab,
+  .tabs-principais button,
+  .sub-tabs button {
+    flex: 0 0 auto;
+    min-height: 42px;
+    white-space: nowrap;
+  }
+
+  .charts-grid,
+  .charts-grid-2,
+  .dashboard-grid,
+  .dashboard-charts,
+  .relatorios-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content,
+  .modal-content.medium,
+  .modal-content.large {
+    width: 100%;
+    max-height: calc(100dvh - 1.5rem);
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+
+  .main-content {
+    padding: 0.85rem;
+  }
+
+  .header-content {
+    min-height: 58px;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .logo-area {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .logo-icon {
+    flex: 0 0 auto;
+  }
+
+  .logo-text h1 {
+    max-width: 46vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .logo-text span {
+    display: block;
+    max-width: 46vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .user-info {
+    display: none;
+  }
+
+  .user-avatar {
+    flex: 0 0 auto;
+  }
+
+  .page-header {
+    margin-bottom: 1rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.55rem;
+    line-height: 1.15;
+  }
+
+  .page-header .subtitle,
+  .page-header .date {
+    font-size: 0.8rem;
+  }
+
+  .page-header > div:last-child,
+  .page-header > .header-actions,
+  .page-header > .report-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .page-header > div:last-child > button,
+  .header-actions > button,
+  .report-actions > button,
+  .pdf-actions > button {
+    width: 100%;
+    justify-content: center;
+    min-width: 0;
+    padding-inline: 0.55rem;
+  }
+
+  .filters-bar,
+  .filters-section,
+  .filters-advanced {
+    display: block;
+  }
+
+  .filters-title {
+    margin-bottom: 0.6rem;
+  }
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .filters-grid > *,
+  .filter-group,
+  .date-range,
+  .disponibilidade-filtros {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .filters-grid input,
+  .filters-grid select,
+  .filter-group input,
+  .filter-group select,
+  .date-range input,
+  .disponibilidade-filtros input,
+  .disponibilidade-filtros select {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  .stats-grid,
+  .stats-grid-2,
+  .stats-grid-4,
+  .modulos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card,
+  .dashboard-card,
+  .chart-card {
+    padding: 0.9rem;
+  }
+
+  .chart-wrapper {
+    min-height: 190px;
+  }
+
+  .modal {
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .modal-content,
+  .modal-content.small,
+  .modal-content.medium,
+  .modal-content.large {
+    width: 100%;
+    height: 100%;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .modal-header {
+    padding: 0.9rem 1rem;
+  }
+
+  .modal-title {
+    font-size: 1.05rem;
+  }
+
+  .modal-body {
+    padding: 0.9rem;
+  }
+
+  .modal-footer {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0.75rem;
+  }
+
+  .modal-footer button,
+  .modal-footer .btn-primary,
+  .modal-footer .btn-outline,
+  .modal-footer .btn-secondary,
+  .modal-footer .btn-success {
+    width: 100%;
+    min-height: 42px;
+    justify-content: center;
+  }
+
+  .form-grid,
+  .info-grid,
+  .detalhes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid .full-width,
+  .form-group.full,
+  .form-group.full-width {
+    grid-column: auto;
+  }
+
+  .form-control,
+  .form-select,
+  select,
+  input,
+  textarea {
+    min-height: 42px;
+    font-size: 16px;
+  }
+
+  textarea {
+    min-height: 96px;
+  }
+
+  .table-responsive table {
+    min-width: 620px;
+  }
+
+  .table-responsive td,
+  .table-responsive th {
+    padding: 0.65rem 0.5rem;
+  }
+
+  .action-buttons,
+  .bulk-actions,
+  .checkin-section {
+    flex-wrap: wrap;
+  }
+
+  .action-buttons button,
+  .bulk-actions button {
+    min-height: 38px;
+  }
+
+  .onboarding-card {
+    grid-template-columns: auto 1fr;
+  }
+}
+
+@media (max-width: 380px) {
+  .main-content {
+    padding: 0.65rem;
+  }
+
+  .page-header > div:last-child,
+  .page-header > .header-actions,
+  .page-header > .report-actions,
+  .modal-footer {
+    grid-template-columns: 1fr;
+  }
+
+  .logo-text h1,
+  .logo-text span {
+    max-width: 40vw;
+  }
+
+  .table-responsive table {
+    min-width: 560px;
+  }
+}
