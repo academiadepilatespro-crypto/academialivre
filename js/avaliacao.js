@@ -1190,6 +1190,7 @@ function exportarFichaPDF() {
     return;
   }
   const doc = new window.jspdf.jsPDF();
+  configurarPDFOficial(doc);
   const titulo = `Ficha de Treino - ${estado.alunoSelecionado?.nome || "Aluno"}`;
   const texto = document.getElementById("fichaConteudo")?.innerText || "";
   doc.setFontSize(16);
@@ -1272,6 +1273,7 @@ function exportarPDF() {
     return;
   }
   const doc = new window.jspdf.jsPDF();
+  configurarPDFOficial(doc);
   const aluno = estado.alunoSelecionado.nome || "Aluno";
   const linhas = [
     `Avaliação detalhada - ${aluno}`,

@@ -2578,6 +2578,7 @@ function extrairDadosTabela(tabela) {
 function exportarPDF(titulo, dados, nomeArquivo) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  configurarPDFOficial(doc);
   doc.setFontSize(16);
   doc.text(titulo, 14, 20);
   doc.setFontSize(10);

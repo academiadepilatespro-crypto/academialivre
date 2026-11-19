@@ -1161,6 +1161,7 @@ async function exportarListaPDF() {
       unit: "mm",
       format: "a4",
     });
+    configurarPDFOficial(doc);
 
     // Título
     doc.setFontSize(18);
@@ -1752,6 +1753,7 @@ function exportarDossiePDF() {
     (item) => String(item.id) === String(alunoId),
   );
   const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
+  configurarPDFOficial(doc);
   const margem = 14;
   const largura = doc.internal.pageSize.getWidth() - margem * 2;
   doc.setTextColor(47, 107, 87);
@@ -1975,6 +1977,7 @@ async function exportarDadosAluno() {
     (item) => item.aluno_id === aluno.id && item.status === "ativo",
   );
   const doc = new window.jspdf.jsPDF();
+  configurarPDFOficial(doc);
   doc.setTextColor(47, 107, 87);
   doc.setFontSize(18);
   doc.text("Dados do aluno", 14, 18);

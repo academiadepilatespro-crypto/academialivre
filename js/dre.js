@@ -1570,6 +1570,7 @@ function initTabs() {
 function exportarPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  configurarPDFOficial(doc);
   doc.setFontSize(18);
   doc.text("Demonstrativo de Resultados", 14, 22);
   doc.setFontSize(10);

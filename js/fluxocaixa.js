@@ -1231,6 +1231,7 @@ function renderizarProjecao() {
 function exportarProjecaoPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  configurarPDFOficial(doc);
   doc.setFontSize(16);
   doc.text("Projeção de Fluxo de Caixa", 14, 20);
   doc.setFontSize(10);
@@ -1413,6 +1414,7 @@ function renderizarDiagnostico() {
 function exportarPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  configurarPDFOficial(doc);
 
   doc.setFontSize(18);
   doc.text("Fluxo de Caixa", 14, 22);

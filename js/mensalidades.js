@@ -1544,6 +1544,7 @@ function obterDadosParaExportacao() {
 function exportarPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  configurarPDFOficial(doc);
 
   doc.setFontSize(18);
   doc.text("Relatório de Mensalidades", 14, 22);
@@ -1990,6 +1991,7 @@ function carregarRelatorioInadimplencia() {
 function exportarRelatorioInadimplenciaPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  configurarPDFOficial(doc);
 
   doc.setFontSize(16);
   doc.text("Relatório de Inadimplência", 14, 22);

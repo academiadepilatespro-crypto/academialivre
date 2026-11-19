@@ -24,6 +24,7 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="../js/pdf-oficial.js?v=official-pdf-20261119"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
       /* ==================== CSS COMPLETO (idêntico ao original, omitido por brevidade) ==================== */
@@ -2162,6 +2163,7 @@
       function exportarAgendaPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        configurarPDFOficial(doc);
         doc.setFontSize(16);
         doc.text(`Agenda - ${aluno.nome}`, 14, 20);
         doc.setFontSize(10);

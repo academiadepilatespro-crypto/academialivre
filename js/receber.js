@@ -1380,6 +1380,7 @@ function verRelatorioCliente(clienteNome) {
 function exportarRelatorioCliente() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  configurarPDFOficial(doc);
   const titulo = document.getElementById("relatorioClienteTitulo").innerText;
   doc.setFontSize(16);
   doc.text(titulo, 14, 22);
@@ -1581,6 +1582,7 @@ function obterDadosParaExportacao() {
 function exportarPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  configurarPDFOficial(doc);
   doc.setFontSize(18);
   doc.text("Relatório de Receitas", 14, 22);
   doc.setFontSize(10);

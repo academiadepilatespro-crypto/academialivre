@@ -1473,6 +1473,7 @@ function verRelatorioFornecedor(fornecedor) {
 function exportarRelatorioFornecedor() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  configurarPDFOficial(doc);
   const titulo = document.getElementById("relatorioFornecedorTitulo").innerText;
   doc.setFontSize(16);
   doc.text(titulo, 14, 22);
@@ -1768,6 +1769,7 @@ function obterDadosParaExportacao() {
 function exportarPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  configurarPDFOficial(doc);
   doc.setFontSize(18);
   doc.text("Relatório de Despesas", 14, 22);
   doc.setFontSize(10);

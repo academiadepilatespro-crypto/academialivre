@@ -29,6 +29,7 @@
     <!-- Bibliotecas para exportação -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="../js/pdf-oficial.js?v=official-pdf-20261119"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="../js/auth.js"></script>
 
@@ -3448,6 +3449,7 @@
           return null;
         }
         const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
+        configurarPDFOficial(doc);
         doc.setTextColor(47, 107, 87);
         doc.setFontSize(18);
         doc.text(titulo, 14, 18);

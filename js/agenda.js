@@ -2787,6 +2787,7 @@ function exportarAgendaDiaPDF() {
   ]);
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  configurarPDFOficial(doc);
   doc.setFontSize(18);
   doc.text("Agenda do Dia - PILATES", 14, 22);
   doc.setFontSize(11);
@@ -2831,6 +2832,7 @@ function exportarAgendaSemanaPDF() {
   });
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF("landscape");
+  configurarPDFOficial(doc);
   doc.setFontSize(18);
   doc.text("Agenda Semanal - PILATES", 14, 22);
   doc.setFontSize(11);
@@ -2891,7 +2893,7 @@ function exportarRelatorioPDF(numero) {
   const conteudoFormatado = `
   <div class="pdf-export" style="padding: 40px; background: white; color: #333;">
     <div class="pdf-header" style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #3a6b5c; padding-bottom: 20px;">
-      <h1 style="color: #3a6b5c; margin: 0; font-size: 24pt;">RAFAELA LISBOA</h1>
+      <h1 style="color: #3a6b5c; margin: 0; font-size: 24pt;">${obterIdentidadePDFOficial().nome}</h1>
       <p style="font-size: 14pt; margin: 5px 0;">Relatório: ${
         titulosRelatorios[numero]
       }</p>
@@ -2910,7 +2912,7 @@ function exportarRelatorioPDF(numero) {
     </div>
     <div class="pdf-section">${clone.outerHTML}</div>
     <div class="pdf-footer" style="text-align: center; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; font-size: 9pt; color: #999;">
-      <p>Documento gerado pelo sistema ESTUDIO DE PILATES RAFAELA LISBOA - Agenda Inteligente</p>
+      <p>Documento oficial gerado pelo sistema ${obterIdentidadePDFOficial().nome}</p>
     </div>
   </div>
 `;
