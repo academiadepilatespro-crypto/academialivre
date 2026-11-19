@@ -1,0 +1,347 @@
+:root {
+  --ui-verde: #2f6b57;
+  --ui-verde-escuro: #245342;
+  --ui-verde-suave: #edf5f1;
+  --ui-fundo: #f6f8f7;
+  --ui-superficie: #ffffff;
+  --ui-texto: #25332e;
+  --ui-texto-suave: #66736e;
+  --ui-borda: #dce5e1;
+  --ui-info: #55746a;
+  --ui-alerta: #9a6c22;
+  --ui-erro: #a44343;
+  --ui-sombra: 0 2px 8px rgba(37, 51, 46, 0.06);
+  --ui-sombra-foco: 0 4px 14px rgba(37, 51, 46, 0.1);
+  --verde-principal: var(--ui-verde);
+  --verde-claro: #9abcae;
+  --verde-pastel: var(--ui-verde-suave);
+  --grafite: var(--ui-texto);
+  --grafite-claro: #52605b;
+  --off-white: var(--ui-fundo);
+  --azul-info: var(--ui-info);
+  --roxo-celebracao: var(--ui-info);
+  --visual-verde: var(--ui-verde);
+  --visual-verde-escuro: var(--ui-verde-escuro);
+  --visual-verde-claro: var(--ui-verde-suave);
+  --visual-azul: var(--ui-info);
+  --visual-azul-claro: #eef3f1;
+  --visual-roxo: var(--ui-info);
+  --visual-roxo-claro: #eef3f1;
+  --visual-cinza: var(--ui-texto-suave);
+  --visual-cinza-claro: #f3f6f4;
+  --visual-borda: var(--ui-borda);
+  --visual-sombra: var(--ui-sombra);
+}
+
+html {
+  background: var(--ui-fundo);
+}
+
+body {
+  background: var(--ui-fundo) !important;
+  color: var(--ui-texto);
+}
+
+/* A interface deve parecer uma ferramenta de trabalho, não uma vitrine. */
+[class*="gradient"],
+.hero-section,
+.welcome-banner,
+.dashboard-banner {
+  background-image: none !important;
+}
+
+.login-page {
+  background: var(--ui-verde) !important;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  transition: background-color 0.16s ease, border-color 0.16s ease,
+    color 0.16s ease, box-shadow 0.16s ease !important;
+}
+
+button:hover,
+a:hover {
+  transform: none !important;
+}
+
+/* Superfícies discretas e consistentes. */
+.card,
+.card-container,
+.stat-card,
+.stats-card,
+.dashboard-card,
+.chart-card,
+.alert-card,
+.alerta-card,
+.mini-card,
+.section-card,
+.list-card,
+.table-container,
+.filters-container,
+.filter-section,
+.form-container,
+.panel,
+.content-card,
+.perfil-card,
+.login-container,
+.login-card {
+  border: 1px solid var(--ui-borda) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--ui-sombra) !important;
+}
+
+.stat-card:hover,
+.dashboard-card:hover,
+.chart-card:hover,
+.alert-card:hover,
+.alerta-card:hover,
+.mini-card:hover,
+.card:hover {
+  box-shadow: var(--ui-sombra-foco) !important;
+}
+
+.card-header,
+.dashboard-header,
+.chart-header,
+.table-header,
+.section-header,
+.modal-header,
+.page-header {
+  border-color: var(--ui-borda) !important;
+}
+
+/* Hierarquia visual: um título forte, texto auxiliar neutro, uma ação principal. */
+h1,
+h2,
+h3,
+h4,
+.page-title,
+.dashboard-title,
+.section-title,
+.card-title,
+.modal-title {
+  color: var(--ui-texto) !important;
+  font-family: var(--font-corpo, "Montserrat", sans-serif) !important;
+  letter-spacing: -0.015em;
+}
+
+.page-subtitle,
+.card-subtitle,
+.dashboard-subtitle,
+.section-subtitle,
+.help-text,
+.form-help,
+.stat-label,
+small {
+  color: var(--ui-texto-suave) !important;
+}
+
+.btn-primary,
+.btn-success,
+.login-btn,
+.action-btn-primary,
+.btn-login {
+  color: #fff !important;
+  background: var(--ui-verde) !important;
+  border-color: var(--ui-verde) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+
+.btn-primary:hover,
+.btn-success:hover,
+.login-btn:hover,
+.action-btn-primary:hover,
+.btn-login:hover {
+  color: #fff !important;
+  background: var(--ui-verde-escuro) !important;
+  border-color: var(--ui-verde-escuro) !important;
+  box-shadow: none !important;
+}
+
+.btn-outline,
+.btn-secondary,
+.btn-icon,
+.btn-hoje,
+button[class*="outline"],
+button[class*="secondary"] {
+  color: var(--ui-verde-escuro) !important;
+  background: var(--ui-superficie) !important;
+  border: 1px solid var(--ui-borda) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+
+.btn-outline:hover,
+.btn-secondary:hover,
+.btn-icon:hover,
+.btn-hoje:hover,
+button[class*="outline"]:hover,
+button[class*="secondary"]:hover {
+  color: var(--ui-verde-escuro) !important;
+  background: var(--ui-verde-suave) !important;
+  border-color: #a9c5b8 !important;
+}
+
+input,
+select,
+textarea,
+.form-control,
+.form-select,
+.form-input,
+.filter-input {
+  color: var(--ui-texto) !important;
+  background: var(--ui-superficie) !important;
+  border-color: var(--ui-borda) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.form-control:focus,
+.form-select:focus,
+.form-input:focus,
+.filter-input:focus {
+  border-color: var(--ui-verde) !important;
+  box-shadow: 0 0 0 3px rgba(47, 107, 87, 0.12) !important;
+  outline: none !important;
+}
+
+/* Apenas estados semânticos recebem cor forte. */
+.badge-info,
+.status-badge.reagendada,
+.relatorio-badge.info,
+.relatorio-badge.roxo,
+.visual-avaliacao {
+  color: var(--ui-info) !important;
+  background: #eef3f1 !important;
+}
+
+.badge-warning,
+.badge.inativo,
+.status-badge.pendente,
+.status-atencao,
+.relatorio-badge.alerta,
+.disponibilidade-badge.alerta {
+  color: var(--ui-alerta) !important;
+  background: #faf5e9 !important;
+}
+
+.badge-danger,
+.status-critica,
+.status-badge.ausente,
+.status-badge.cancelada,
+.relatorio-badge.critico,
+.disponibilidade-badge.lotado {
+  color: var(--ui-erro) !important;
+  background: #faeeee !important;
+}
+
+.badge-success,
+.badge.ativo,
+.status-badge.presente,
+.status-badge.confirmada,
+.status-boa,
+.relatorio-badge.normal,
+.disponibilidade-badge.livre {
+  color: var(--ui-verde-escuro) !important;
+  background: var(--ui-verde-suave) !important;
+}
+
+.badge,
+.status-badge,
+.relatorio-badge,
+.conta-badge,
+.tipo-badge,
+.disponibilidade-badge,
+.form-step {
+  border-radius: 5px !important;
+  font-weight: 600;
+}
+
+/* Navegação silenciosa, com o verde reservado para localização e ação. */
+.sidebar,
+.sidebar-menu,
+nav.sidebar,
+.portal-header {
+  background: #274f42 !important;
+  box-shadow: none !important;
+}
+
+.sidebar-nav .nav-item,
+.nav-item {
+  border-radius: 5px !important;
+}
+
+.sidebar-nav .nav-item:hover,
+.sidebar-nav .nav-item.active,
+.nav-item.active {
+  box-shadow: inset 3px 0 0 #b8d7c8 !important;
+}
+
+.onboarding-card,
+.welcome-card,
+.info-card {
+  background: var(--ui-superficie) !important;
+  border: 1px solid var(--ui-borda) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--ui-sombra) !important;
+}
+
+.empty-state,
+.empty-state-text,
+.empty-state-table {
+  background: var(--ui-fundo) !important;
+  border-color: var(--ui-borda) !important;
+  border-radius: 6px !important;
+}
+
+.modal-content,
+.modal-container,
+.modal-card {
+  border: 1px solid var(--ui-borda) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 32px rgba(37, 51, 46, 0.16) !important;
+}
+
+.table-responsive,
+.table-wrapper {
+  border-color: var(--ui-borda) !important;
+}
+
+table thead th {
+  color: var(--ui-texto-suave) !important;
+  background: #f3f6f4 !important;
+  border-bottom-color: var(--ui-borda) !important;
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+table tbody tr:hover {
+  background: #f8fbf9 !important;
+}
+
+@media (max-width: 720px) {
+  .card,
+  .card-container,
+  .stat-card,
+  .stats-card,
+  .dashboard-card,
+  .chart-card,
+  .alert-card,
+  .section-card,
+  .table-container,
+  .filters-container,
+  .form-container,
+  .panel {
+    border-radius: 7px !important;
+    box-shadow: var(--ui-sombra) !important;
+  }
+}
