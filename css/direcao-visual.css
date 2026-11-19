@@ -273,7 +273,43 @@ nav.sidebar,
   background: #274f42 !important;
   box-shadow: none !important;
 }
-
+.sidebar .sidebar-logo,
+.sidebar .sidebar-user {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+.sidebar .sidebar-logo-text,
+.sidebar .sidebar-user-name,
+.sidebar .sidebar-user-role {
+  color: #f4faf7 !important;
+}
+.sidebar .sidebar-logo-subtitle {
+  color: #b8d7c8 !important;
+}
+.sidebar .sidebar-nav .nav-item,
+.sidebar .nav-item {
+  color: #e6f1ec !important;
+  background: transparent !important;
+}
+.sidebar .sidebar-nav .nav-item i,
+.sidebar .nav-item i {
+  color: #b8d7c8 !important;
+}
+.sidebar .sidebar-nav .nav-item:hover,
+.sidebar .sidebar-nav .nav-item.active,
+.sidebar .nav-item:hover,
+.sidebar .nav-item.active {
+  color: #ffffff !important;
+  background: rgba(184, 215, 200, 0.18) !important;
+}
+.sidebar .sidebar-nav .nav-item:hover i,
+.sidebar .sidebar-nav .nav-item.active i,
+.sidebar .nav-item:hover i,
+.sidebar .nav-item.active i {
+  color: #ffffff !important;
+}
+.sidebar .sidebar-logout {
+  color: #f2b4aa !important;
+}
 .sidebar-nav .nav-item,
 .nav-item {
   border-radius: 5px !important;
