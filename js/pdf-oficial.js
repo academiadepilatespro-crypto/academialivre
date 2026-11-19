@@ -31,6 +31,16 @@
       .join(" • ");
   }
 
+  function desenharMarca(doc, x, y, tamanho = 5) {
+    doc.setFillColor(...CORES.verde);
+    doc.circle(x, y, tamanho, "F");
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.8);
+    doc.line(x - tamanho * 0.48, y + tamanho * 0.1, x, y - tamanho * 0.48);
+    doc.line(x, y - tamanho * 0.48, x + tamanho * 0.48, y + tamanho * 0.1);
+    doc.line(x - tamanho * 0.42, y + tamanho * 0.18, x + tamanho * 0.42, y + tamanho * 0.18);
+  }
+
   function aplicarEstiloTabela(doc) {
     if (typeof doc.autoTableSetDefaults !== "function") return;
     doc.autoTableSetDefaults({
@@ -61,10 +71,11 @@
     doc.rect(0, 0, largura, 15, "F");
     doc.setFillColor(...CORES.verde);
     doc.rect(0, 14, largura, 1.2, "F");
+    desenharMarca(doc, 18, 7.5, 4.2);
     doc.setTextColor(...CORES.verdeEscuro);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text(info.nome, 14, 9.5);
+    doc.text(info.nome, 25, 9.5);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     const complemento = [info.subtitulo, textoIdentidade(info)].filter(Boolean).join(" • ");
@@ -86,7 +97,7 @@
       doc.setTextColor(...CORES.textoSuave);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7.5);
-      doc.text(info.nome, 14, altura - 7.5);
+      doc.text(`${info.nome} • Documento interno • Uso profissional • ${new Date().toLocaleDateString("pt-BR")}`, 14, altura - 7.5);
       doc.text(`Página ${pagina} de ${paginas}`, largura - 14, altura - 7.5, { align: "right" });
     }
   }
@@ -115,6 +126,10 @@
 
   global.configurarPDFOficial = configurarPDFOficial;
   global.obterIdentidadePDFOficial = identidadeAtual;
+  global.definirIdentidadePDFOficial = function (configuracao) {
+    global.configEstudioPDF = { ...IDENTIDADE_PADRAO, ...(configuracao || {}) };
+    return global.configEstudioPDF;
+  };
   global.desenharCabecalhoPDFOficial = function (doc) {
     if (doc) desenharCabecalho(doc, identidadeAtual());
   };

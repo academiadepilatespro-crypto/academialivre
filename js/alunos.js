@@ -1750,7 +1750,7 @@ async function visualizarDossie(id) {
   }
 }
 
-function exportarDossiePDF() {
+async function exportarDossiePDF() {
   const dados = estado.dossieAtual;
   const aluno = dados?.aluno || estado.dados.alunos.data.find(
     (item) => String(item.id) === String(estado.alunoAtual),
@@ -1762,6 +1762,19 @@ function exportarDossiePDF() {
   if (!window.jspdf?.jsPDF || typeof configurarPDFOficial !== "function") {
     mostrarToast("Biblioteca de PDF indisponível", "error");
     return;
+  }
+
+  try {
+    const { data: configuracao } = await supabaseClient
+      .from("config_estudio")
+      .select("nome, telefone, email, endereco, cnpj")
+      .eq("id", 1)
+      .maybeSingle();
+    if (configuracao && typeof definirIdentidadePDFOficial === "function") {
+      definirIdentidadePDFOficial(configuracao);
+    }
+  } catch (error) {
+    console.warn("Não foi possível carregar a identidade do estúdio para o PDF:", error);
   }
 
   const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
@@ -1899,6 +1912,8 @@ function exportarDossiePDF() {
   doc.setFontSize(8.5);
   doc.setTextColor(...cores.suave);
   doc.text(`${idade ? `${idade} anos` : "Idade não informada"} • ${aluno.sexo === "F" ? "Feminino" : aluno.sexo === "M" ? "Masculino" : "Sexo não informado"}`, pagina.margem + 30, y + 24);
+  doc.setFontSize(7.5);
+  doc.text(`Cadastro #${valor(aluno.id, "-")} • ${aluno.telefone ? mascaraTelefone(aluno.telefone) : "Telefone não informado"}`, pagina.margem + 30, y + 29);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(...(aluno.ativo === false ? cores.vermelho : cores.verdeEscuro));
@@ -1938,11 +1953,11 @@ function exportarDossiePDF() {
   ]);
   y += 58;
 
-  secao(pagina.margem, y, metade, 47, "SAÚDE E SEGURANÇA", [
+  secao(pagina.margem, y, metade, 47, sau?.alergias ? "SAÚDE • ATENÇÃO CLÍNICA" : "SAÚDE E SEGURANÇA", [
     ["TIPO SANGUÍNEO", sau?.tipo_sanguineo || "Não informado"],
     ["CONTATO DE EMERGÊNCIA", sau?.contato_emergencia || "Não informado"],
     ["ALERGIAS", sau?.alergias || "Nenhuma informada", { tamanho: 8.2 }],
-  ], { fundo: sau?.alergias ? cores.amareloFundo : [255, 255, 255] });
+  ], { fundo: sau?.alergias ? cores.amareloFundo : [255, 255, 255], corTitulo: sau?.alergias ? cores.amarelo : cores.verdeEscuro });
   secao(pagina.margem + metade + pagina.gap, y, metade, 47, "AGENDA E FINANCEIRO", [
     ["STATUS FINANCEIRO", statusTexto, { cor: statusCor }],
     ["ÚLTIMA AULA", data(dados?.ultimaAula)],
@@ -1952,6 +1967,14 @@ function exportarDossiePDF() {
 
   // Avaliação com indicadores numéricos e barras horizontais.
   const avaliacaoAltura = 55;
+  const interpretarDor = (nivel) => {
+    const valorDor = Number(nivel);
+    if (!Number.isFinite(valorDor)) return "sem registro";
+    if (valorDor <= 2) return "baixa";
+    if (valorDor <= 5) return "moderada";
+    if (valorDor <= 7) return "alta";
+    return "muito alta";
+  };
   cartao(pagina.margem, y, larguraUtil, avaliacaoAltura, `AVALIAÇÃO FÍSICA (${avaliacoes.length})`, { fundo: [255, 255, 255], linha: true });
   if (!avaliacao) {
     textoQuebrado("Nenhuma avaliação detalhada registrada.", pagina.margem + 6, y + 23, larguraUtil - 12, 9, cores.suave);
@@ -1983,6 +2006,10 @@ function exportarDossiePDF() {
       doc.setTextColor(...cores.texto);
       doc.text(Number.isFinite(metrica[1]) ? `${metrica[1]}/10` : "-", x + 26, yy + 4);
     });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(...cores.suave);
+    doc.text(`Escala de 0 a 10 • Nível de dor: ${interpretarDor(avaliacao.dor_value)} • Quanto maior, melhor nos testes físicos.`, pagina.margem + 6, y + 50);
   }
   y += avaliacaoAltura + 6;
 
