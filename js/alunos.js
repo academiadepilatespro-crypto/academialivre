@@ -50,6 +50,7 @@ const estado = {
     ultimaAula: "",
   },
   alunoAtual: null,
+  dossieAtual: null,
   paginacao: { pagina: 1, itensPorPagina: 10, totalItens: 0 },
   alertas: { atrasados: 0, vencimento: 0, inativos: 0 },
   fotoArquivo: null,
@@ -1713,6 +1714,17 @@ async function visualizarDossie(id) {
     ]);
     const avaliacoes = avaliacoesResult.error ? [] : avaliacoesResult.data || [];
     const ultimaAvaliacao = avaliacoes[0];
+    estado.dossieAtual = {
+      aluno,
+      end,
+      sau,
+      docs,
+      evos,
+      avaliacoes,
+      statusFinanceiro,
+      ultimaAula,
+      proximaAula,
+    };
     const idade = calcularIdade(aluno.nascimento);
     let fotoHtml = "";
     if (aluno.foto_url)
@@ -1739,53 +1751,284 @@ async function visualizarDossie(id) {
 }
 
 function exportarDossiePDF() {
-  const conteudo = document.getElementById("conteudoDossie");
-  const alunoId = estado.alunoAtual;
-  if (!conteudo || !conteudo.innerText.trim()) {
+  const dados = estado.dossieAtual;
+  const aluno = dados?.aluno || estado.dados.alunos.data.find(
+    (item) => String(item.id) === String(estado.alunoAtual),
+  );
+  if (!aluno) {
     mostrarToast("Abra o dossiê de um aluno antes de exportar", "error");
     return;
   }
-  if (!window.jspdf?.jsPDF) {
+  if (!window.jspdf?.jsPDF || typeof configurarPDFOficial !== "function") {
     mostrarToast("Biblioteca de PDF indisponível", "error");
     return;
   }
-  const aluno = estado.dados.alunos.data.find(
-    (item) => String(item.id) === String(alunoId),
-  );
-  const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
-  configurarPDFOficial(doc);
-  const margem = 14;
-  const largura = doc.internal.pageSize.getWidth() - margem * 2;
-  doc.setTextColor(47, 107, 87);
-  doc.setFontSize(18);
-  doc.text("Dossiê do aluno", margem, 18);
-  doc.setTextColor(100, 115, 110);
-  doc.setFontSize(9);
-  doc.text(
-    `Gerado em ${new Date().toLocaleString("pt-BR")} • ${aluno?.nome || "Aluno"}`,
-    margem,
-    25,
-  );
-  doc.setDrawColor(220, 229, 225);
-  doc.line(margem, 29, margem + largura, 29);
-  doc.setTextColor(37, 51, 46);
-  doc.setFontSize(10);
-  const linhas = doc.splitTextToSize(conteudo.innerText.trim(), largura);
-  let y = 38;
-  linhas.forEach((linha) => {
-    if (y > 280) {
-      doc.addPage();
-      y = 18;
-    }
-    doc.text(linha, margem, y);
-    y += 5;
-  });
-  doc.save(
-    `dossie_${(aluno?.nome || "aluno").replace(/[^a-z0-9]+/gi, "_")}.pdf`,
-  );
-  mostrarToast("Dossiê exportado em PDF", "success");
-}
 
+  const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
+  configurarPDFOficial(doc, { titulo: `Dossiê - ${aluno.nome || "Aluno"}` });
+
+  const pagina = {
+    largura: doc.internal.pageSize.getWidth(),
+    altura: doc.internal.pageSize.getHeight(),
+    margem: 14,
+    gap: 5,
+  };
+  const cores = {
+    verde: [47, 107, 87],
+    verdeEscuro: [36, 83, 66],
+    verdeSuave: [237, 245, 241],
+    fundo: [248, 251, 249],
+    texto: [37, 51, 46],
+    suave: [102, 115, 110],
+    borda: [220, 229, 225],
+    amarelo: [154, 108, 34],
+    amareloFundo: [250, 245, 233],
+    vermelho: [164, 67, 67],
+    vermelhoFundo: [250, 238, 238],
+  };
+  const larguraUtil = pagina.largura - pagina.margem * 2;
+  let y = 22;
+
+  const valor = (item, fallback = "Não informado") => {
+    if (item === null || item === undefined || String(item).trim() === "") return fallback;
+    return String(item);
+  };
+  const data = (item) => item ? formatarData(item) : "Não informado";
+  const idade = calcularIdade(aluno.nascimento);
+  const end = dados?.end || estado.dados.enderecos.data[String(aluno.id)];
+  const sau = dados?.sau || estado.dados.saude.data[String(aluno.id)];
+  const docs = dados?.docs || estado.dados.documentos.data[String(aluno.id)] || [];
+  const evos = dados?.evos || estado.dados.evolucao.data[String(aluno.id)] || [];
+  const avaliacoes = dados?.avaliacoes || [];
+  const avaliacao = avaliacoes[0];
+  const statusFinanceiro = dados?.statusFinanceiro || "pendente";
+  const statusTexto = statusFinanceiro === "em-dia" ? "Em dia" : statusFinanceiro === "atrasado" ? "Atrasado" : "Pendente";
+  const statusCor = statusFinanceiro === "em-dia" ? cores.verdeEscuro : statusFinanceiro === "atrasado" ? cores.vermelho : cores.amarelo;
+  const statusFundo = statusFinanceiro === "em-dia" ? cores.verdeSuave : statusFinanceiro === "atrasado" ? cores.vermelhoFundo : cores.amareloFundo;
+
+  function textoInicial() {
+    return String(aluno.nome || "Aluno")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((parte) => parte[0])
+      .join("")
+      .toUpperCase();
+  }
+
+  function novaPagina() {
+    doc.addPage();
+    if (typeof desenharCabecalhoPDFOficial === "function") desenharCabecalhoPDFOficial(doc);
+    y = 22;
+  }
+
+  function garantirEspaco(altura) {
+    if (y + altura > pagina.altura - 19) novaPagina();
+  }
+
+  function textoQuebrado(texto, x, inicio, largura, tamanho = 9, cor = cores.texto, entrelinha = 4) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(tamanho);
+    doc.setTextColor(...cor);
+    const linhas = doc.splitTextToSize(valor(texto), largura);
+    doc.text(linhas, x, inicio);
+    return linhas.length * entrelinha;
+  }
+
+  function cartao(x, inicio, largura, altura, titulo, opcoes = {}) {
+    doc.setFillColor(...(opcoes.fundo || [255, 255, 255]));
+    doc.setDrawColor(...cores.borda);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(x, inicio, largura, altura, 2, 2, "FD");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(opcoes.tamanhoTitulo || 9.5);
+    doc.setTextColor(...(opcoes.corTitulo || cores.verdeEscuro));
+    doc.text(titulo, x + 6, inicio + 8);
+    if (opcoes.linha) {
+      doc.setDrawColor(...cores.borda);
+      doc.line(x + 6, inicio + 11, x + largura - 6, inicio + 11);
+    }
+  }
+
+  function campo(x, inicio, largura, rotulo, conteudo, opcoes = {}) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.8);
+    doc.setTextColor(...cores.suave);
+    doc.text(String(rotulo).toUpperCase(), x, inicio);
+    const altura = textoQuebrado(conteudo, x, inicio + 4, largura, opcoes.tamanho || 8.8, opcoes.cor || cores.texto, 3.8);
+    return 4 + altura;
+  }
+
+  function secao(x, inicio, largura, altura, titulo, campos, opcoes = {}) {
+    cartao(x, inicio, largura, altura, titulo, { fundo: opcoes.fundo || [255, 255, 255], corTitulo: opcoes.corTitulo || cores.verdeEscuro, linha: true });
+    const colunas = opcoes.colunas || 2;
+    const larguraColuna = (largura - 12 - (colunas - 1) * 5) / colunas;
+    const inicioCampos = inicio + 18;
+    campos.forEach((item, indice) => {
+      const coluna = indice % colunas;
+      const linha = Math.floor(indice / colunas);
+      const xCampo = x + 6 + coluna * (larguraColuna + 5);
+      const yCampo = inicioCampos + linha * (opcoes.alturaLinha || 17);
+      campo(xCampo, yCampo, larguraColuna, item[0], item[1], item[2] || {});
+    });
+  }
+
+  // Cabeçalho do documento e identificação principal do aluno.
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(...cores.verdeEscuro);
+  doc.text("Dossiê completo do aluno", pagina.margem, y);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(...cores.suave);
+  doc.text(`Documento interno • Gerado em ${new Date().toLocaleString("pt-BR")}`, pagina.margem, y + 6);
+  y += 12;
+
+  const alturaIdentificacao = 34;
+  cartao(pagina.margem, y, larguraUtil, alturaIdentificacao, "IDENTIFICAÇÃO DO ALUNO", { fundo: cores.verdeSuave, corTitulo: cores.verdeEscuro });
+  doc.setFillColor(...cores.verde);
+  doc.circle(pagina.margem + 16, y + 21, 9, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(255, 255, 255);
+  doc.text(textoInicial(), pagina.margem + 16, y + 24, { align: "center" });
+  doc.setTextColor(...cores.texto);
+  doc.setFontSize(13);
+  doc.text(valor(aluno.nome, "Aluno"), pagina.margem + 30, y + 18);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...cores.suave);
+  doc.text(`${idade ? `${idade} anos` : "Idade não informada"} • ${aluno.sexo === "F" ? "Feminino" : aluno.sexo === "M" ? "Masculino" : "Sexo não informado"}`, pagina.margem + 30, y + 24);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(...(aluno.ativo === false ? cores.vermelho : cores.verdeEscuro));
+  doc.text(aluno.ativo === false ? "ALUNO INATIVO" : "ALUNO ATIVO", pagina.margem + larguraUtil - 6, y + 9, { align: "right" });
+  y += alturaIdentificacao + 6;
+
+  // Resumo operacional em cards compactos.
+  const kpiLargura = (larguraUtil - 15) / 4;
+  const kpis = [
+    ["FINANCEIRO", statusTexto, statusCor, statusFundo],
+    ["ÚLTIMA AULA", data(dados?.ultimaAula), cores.texto, [255, 255, 255]],
+    ["PRÓXIMA AULA", data(dados?.proximaAula), cores.texto, [255, 255, 255]],
+    ["AVALIAÇÃO", avaliacao ? data(avaliacao.data_avaliacao) : "Não realizada", cores.texto, [255, 255, 255]],
+  ];
+  kpis.forEach((kpi, indice) => {
+    const x = pagina.margem + indice * (kpiLargura + 5);
+    cartao(x, y, kpiLargura, 23, kpi[0], { fundo: kpi[3], corTitulo: cores.suave });
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...kpi[2]);
+    doc.text(doc.splitTextToSize(kpi[1], kpiLargura - 10), x + 5, y + 17);
+  });
+  y += 29;
+
+  // Dados cadastrais, endereço, saúde e situação operacional.
+  const metade = (larguraUtil - pagina.gap) / 2;
+  secao(pagina.margem, y, metade, 52, "DADOS PESSOAIS", [
+    ["CPF", aluno.cpf ? mascaraCPF(aluno.cpf) : "Não informado"],
+    ["NASCIMENTO", data(aluno.nascimento)],
+    ["TELEFONE", aluno.telefone ? mascaraTelefone(aluno.telefone) : "Não informado"],
+    ["E-MAIL", valor(aluno.email)],
+  ]);
+  secao(pagina.margem + metade + pagina.gap, y, metade, 52, "ENDEREÇO", [
+    ["LOGRADOURO", end ? `${valor(end.endereco, "Não informado")}${end.numero ? `, ${end.numero}` : ""}` : "Não informado"],
+    ["BAIRRO / CIDADE", end ? `${valor(end.bairro, "Não informado")} • ${valor(end.cidade, "Não informado")}` : "Não informado"],
+    ["ESTADO / CEP", end ? `${valor(end.estado, "Não informado")} • ${valor(end.cep, "Não informado")}` : "Não informado"],
+  ]);
+  y += 58;
+
+  secao(pagina.margem, y, metade, 47, "SAÚDE E SEGURANÇA", [
+    ["TIPO SANGUÍNEO", sau?.tipo_sanguineo || "Não informado"],
+    ["CONTATO DE EMERGÊNCIA", sau?.contato_emergencia || "Não informado"],
+    ["ALERGIAS", sau?.alergias || "Nenhuma informada", { tamanho: 8.2 }],
+  ], { fundo: sau?.alergias ? cores.amareloFundo : [255, 255, 255] });
+  secao(pagina.margem + metade + pagina.gap, y, metade, 47, "AGENDA E FINANCEIRO", [
+    ["STATUS FINANCEIRO", statusTexto, { cor: statusCor }],
+    ["ÚLTIMA AULA", data(dados?.ultimaAula)],
+    ["PRÓXIMA AULA", data(dados?.proximaAula)],
+  ], { fundo: statusFundo });
+  y += 53;
+
+  // Avaliação com indicadores numéricos e barras horizontais.
+  const avaliacaoAltura = 55;
+  cartao(pagina.margem, y, larguraUtil, avaliacaoAltura, `AVALIAÇÃO FÍSICA (${avaliacoes.length})`, { fundo: [255, 255, 255], linha: true });
+  if (!avaliacao) {
+    textoQuebrado("Nenhuma avaliação detalhada registrada.", pagina.margem + 6, y + 23, larguraUtil - 12, 9, cores.suave);
+  } else {
+    campo(pagina.margem + 6, y + 18, 45, "DATA", data(avaliacao.data_avaliacao));
+    campo(pagina.margem + 58, y + 18, 55, "OBJETIVO", valor(avaliacao.objetivo_principal));
+    const metricas = [
+      ["Flexibilidade", Number(avaliacao.flexibilidade_value)],
+      ["Força", Number(avaliacao.forca_value)],
+      ["Equilíbrio", Number(avaliacao.equilibrio_value)],
+      ["Dor", Number(avaliacao.dor_value)],
+    ];
+    metricas.forEach((metrica, indice) => {
+      const coluna = indice % 2;
+      const linha = Math.floor(indice / 2);
+      const x = pagina.margem + 125 + coluna * 35;
+      const yy = y + 19 + linha * 14;
+      const numero = Number.isFinite(metrica[1]) ? metrica[1] : 0;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(...cores.suave);
+      doc.text(metrica[0], x, yy);
+      doc.setFillColor(...cores.borda);
+      doc.roundedRect(x, yy + 2, 24, 2.5, 1, 1, "F");
+      doc.setFillColor(...(metrica[0] === "Dor" ? cores.amarelo : cores.verde));
+      doc.roundedRect(x, yy + 2, Math.max(1, Math.min(24, numero / 10 * 24)), 2.5, 1, 1, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(...cores.texto);
+      doc.text(Number.isFinite(metrica[1]) ? `${metrica[1]}/10` : "-", x + 26, yy + 4);
+    });
+  }
+  y += avaliacaoAltura + 6;
+
+  function lista(titulo, itens, mensagemVazia, renderItem) {
+    const alturaMinima = 28;
+    garantirEspaco(alturaMinima);
+    const inicio = y;
+    cartao(pagina.margem, inicio, larguraUtil, alturaMinima, `${titulo} (${itens.length})`, { fundo: [255, 255, 255], linha: true });
+    if (!itens.length) {
+      textoQuebrado(mensagemVazia, pagina.margem + 6, inicio + 21, larguraUtil - 12, 8.5, cores.suave);
+      y = inicio + alturaMinima + 6;
+      return;
+    }
+    let cursor = inicio + 18;
+    itens.slice(0, 8).forEach((item) => {
+      const linhas = renderItem(item);
+      const alturaItem = Math.max(11, linhas.length * 3.8 + 6);
+      if (cursor + alturaItem > pagina.altura - 19) {
+        novaPagina();
+        cursor = y;
+      }
+      doc.setFillColor(...cores.fundo);
+      doc.roundedRect(pagina.margem + 6, cursor, larguraUtil - 12, alturaItem, 1.5, 1.5, "F");
+      linhas.forEach((linha, indice) => {
+        doc.setFont("helvetica", indice === 0 ? "bold" : "normal");
+        doc.setFontSize(indice === 0 ? 8.2 : 7.8);
+        doc.setTextColor(...(indice === 0 ? cores.texto : cores.suave));
+        doc.text(linha, pagina.margem + 10, cursor + 5 + indice * 3.8);
+      });
+      cursor += alturaItem + 3;
+    });
+    y = cursor + 3;
+  }
+
+  lista("DOCUMENTOS", docs, "Nenhum documento anexado.", (item) => [
+    valor(item.nome, "Documento"),
+    item.observacao ? item.observacao : "Arquivo cadastrado no dossiê",
+  ]);
+  lista("EVOLUÇÕES", evos, "Nenhuma evolução registrada até o momento.", (item) => [
+    `${data(item.data)} • ${valor(item.titulo, "Evolução")}`,
+    valor(item.descricao, "Sem descrição registrada."),
+  ]);
+
+  doc.save(`dossie_${String(aluno.nome || "aluno").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "").toLowerCase()}.pdf`);
+  mostrarToast("Dossiê estruturado exportado em PDF", "success");
+}
 // ============================================================
 // FUNÇÕES DOS MODAIS DE ACESSO RÁPIDO
 // ============================================================

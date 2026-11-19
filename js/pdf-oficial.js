@@ -115,4 +115,7 @@
 
   global.configurarPDFOficial = configurarPDFOficial;
   global.obterIdentidadePDFOficial = identidadeAtual;
+  global.desenharCabecalhoPDFOficial = function (doc) {
+    if (doc) desenharCabecalho(doc, identidadeAtual());
+  };
 })(window);
