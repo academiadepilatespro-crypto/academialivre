@@ -599,8 +599,8 @@ async function carregarStatusFinanceiro(alunoId) {
   try {
     const { data, error } = await supabaseClient
       .from("parcelas")
-      .select("status, valor")
-      .eq("aluno_id", alunoId);
+      .select("status, valor, mensalidades!inner(aluno_id)")
+      .eq("mensalidades.aluno_id", alunoId);
     if (error) throw error;
     let temAtrasado = false,
       temPendente = false;
