@@ -600,13 +600,16 @@ async function carregarStatusFinanceiro(alunoId) {
   try {
     const { data, error } = await supabaseClient
       .from("parcelas")
-      .select("status, valor, mensalidades!inner(aluno_id)")
+      .select("status, valor, vencimento, data_pagamento, mensalidades!inner(aluno_id)")
       .eq("mensalidades.aluno_id", alunoId);
     if (error) throw error;
     let temAtrasado = false,
       temPendente = false;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
     (data || []).forEach((p) => {
-      if (p.status === "atrasado") temAtrasado = true;
+      const vencida = p.vencimento && new Date(`${p.vencimento}T12:00:00`) < hoje && !p.data_pagamento;
+      if (p.status === "atrasado" || vencida) temAtrasado = true;
       else if (p.status === "pendente") temPendente = true;
     });
     if (temAtrasado) return "atrasado";
@@ -615,6 +618,48 @@ async function carregarStatusFinanceiro(alunoId) {
   } catch (error) {
     console.error("Erro ao carregar financeiro:", error);
     return "erro";
+  }
+}
+
+async function carregarDetalhamentoFinanceiro(alunoId) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("parcelas")
+      .select(
+        "id, mensalidade_id, numero, valor, vencimento, data_pagamento, status, juros_calculado, multa_calculada, observacoes, mensalidades!inner(aluno_id, plano, valor_total, numero_parcelas, status, ativo)",
+      )
+      .eq("mensalidades.aluno_id", alunoId)
+      .order("vencimento", { ascending: true });
+    if (error) throw error;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    return (data || []).map((parcela) => {
+      const vencimento = parcela.vencimento
+        ? new Date(`${parcela.vencimento}T12:00:00`)
+        : null;
+      const mensalidadeAtiva = parcela.mensalidades?.ativo !== false &&
+        !["cancelada", "cancelado"].includes(parcela.mensalidades?.status);
+      const vencida = mensalidadeAtiva && vencimento && vencimento < hoje && !parcela.data_pagamento;
+      const diasAtraso = vencida
+        ? Math.max(1, Math.floor((hoje - vencimento) / 86400000))
+        : 0;
+      return {
+        ...parcela,
+        statusExibicao: parcela.status === "atrasado" || vencida
+          ? "Atrasado"
+          : parcela.status === "pago"
+            ? "Pago"
+            : "Pendente",
+        diasAtraso,
+        totalAtualizado:
+          Number(parcela.valor || 0) +
+          Number(parcela.juros_calculado || 0) +
+          Number(parcela.multa_calculada || 0),
+      };
+    });
+  } catch (error) {
+    console.error("Erro ao detalhar financeiro do aluno:", error);
+    return [];
   }
 }
 
@@ -1702,8 +1747,9 @@ async function visualizarDossie(id) {
     const sau = estado.dados.saude.data[alunoIdStr];
     const docs = estado.dados.documentos.data[alunoIdStr] || [];
     const evos = estado.dados.evolucao.data[alunoIdStr] || [];
-    const [statusFinanceiro, ultimaAula, proximaAula, avaliacoesResult] = await Promise.all([
+    const [statusFinanceiro, detalhamentoFinanceiro, ultimaAula, proximaAula, avaliacoesResult] = await Promise.all([
       carregarStatusFinanceiro(aluno.id),
+      carregarDetalhamentoFinanceiro(aluno.id),
       carregarUltimaAula(aluno.id),
       carregarProximaAula(aluno.id),
       supabaseClient
@@ -1722,6 +1768,7 @@ async function visualizarDossie(id) {
       evos,
       avaliacoes,
       statusFinanceiro,
+      financeiro: detalhamentoFinanceiro,
       ultimaAula,
       proximaAula,
     };
@@ -1815,6 +1862,11 @@ async function exportarDossiePDF() {
   const avaliacoes = dados?.avaliacoes || [];
   const avaliacao = avaliacoes[0];
   const statusFinanceiro = dados?.statusFinanceiro || "pendente";
+  const financeiro = dados?.financeiro || [];
+  const parcelasAtrasadas = financeiro.filter((parcela) => parcela.statusExibicao === "Atrasado");
+  const parcelasPendentes = financeiro.filter((parcela) => parcela.statusExibicao === "Pendente");
+  const totalAtrasado = parcelasAtrasadas.reduce((total, parcela) => total + Number(parcela.totalAtualizado || parcela.valor || 0), 0);
+  const totalPendente = parcelasPendentes.reduce((total, parcela) => total + Number(parcela.valor || 0), 0);
   const statusTexto = statusFinanceiro === "em-dia" ? "Em dia" : statusFinanceiro === "atrasado" ? "Atrasado" : "Pendente";
   const statusCor = statusFinanceiro === "em-dia" ? cores.verdeEscuro : statusFinanceiro === "atrasado" ? cores.vermelho : cores.amarelo;
   const statusFundo = statusFinanceiro === "em-dia" ? cores.verdeSuave : statusFinanceiro === "atrasado" ? cores.vermelhoFundo : cores.amareloFundo;
@@ -1923,7 +1975,7 @@ async function exportarDossiePDF() {
   // Resumo operacional em cards compactos.
   const kpiLargura = (larguraUtil - 15) / 4;
   const kpis = [
-    ["FINANCEIRO", statusTexto, statusCor, statusFundo],
+    ["FINANCEIRO", parcelasAtrasadas.length ? `${statusTexto} • ${formatarMoeda(totalAtrasado)}` : statusTexto, statusCor, statusFundo],
     ["ÚLTIMA AULA", data(dados?.ultimaAula), cores.texto, [255, 255, 255]],
     ["PRÓXIMA AULA", data(dados?.proximaAula), cores.texto, [255, 255, 255]],
     ["AVALIAÇÃO", avaliacao ? data(avaliacao.data_avaliacao) : "Não realizada", cores.texto, [255, 255, 255]],
@@ -2012,6 +2064,81 @@ async function exportarDossiePDF() {
     doc.text(`Escala de 0 a 10 • Nível de dor: ${interpretarDor(avaliacao.dor_value)} • Quanto maior, melhor nos testes físicos.`, pagina.margem + 6, y + 50);
   }
   y += avaliacaoAltura + 6;
+
+  const quantidadeExibida = Math.min(parcelasAtrasadas.length, 3);
+  const alturaFinanceira = parcelasAtrasadas.length
+    ? 39 + quantidadeExibida * 14 + (parcelasAtrasadas.length > 3 ? 7 : 0)
+    : 34;
+  garantirEspaco(alturaFinanceira);
+  cartao(
+    pagina.margem,
+    y,
+    larguraUtil,
+    alturaFinanceira,
+    parcelasAtrasadas.length ? "ATENÇÃO FINANCEIRA • AÇÃO RECOMENDADA" : "ACOMPANHAMENTO FINANCEIRO",
+    {
+      fundo: parcelasAtrasadas.length ? cores.vermelhoFundo : cores.verdeSuave,
+      corTitulo: parcelasAtrasadas.length ? cores.vermelho : cores.verdeEscuro,
+      linha: true,
+    },
+  );
+  if (!parcelasAtrasadas.length) {
+    textoQuebrado(
+      parcelasPendentes.length
+        ? `Nenhuma parcela vencida. Há ${parcelasPendentes.length} parcela(s) pendente(s), totalizando ${formatarMoeda(totalPendente)}.`
+        : "Nenhuma pendência financeira identificada para este aluno.",
+      pagina.margem + 6,
+      y + 22,
+      larguraUtil - 12,
+      8.5,
+      cores.texto,
+    );
+  } else {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...cores.vermelho);
+    doc.text(
+      `${parcelasAtrasadas.length} parcela(s) em atraso • Total atualizado: ${formatarMoeda(totalAtrasado)}`,
+      pagina.margem + 6,
+      y + 18,
+    );
+    parcelasAtrasadas.slice(0, 3).forEach((parcela, indice) => {
+      const linhaY = y + 24 + indice * 14;
+      const planoNome = parcela.mensalidades?.plano || "Plano não identificado";
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(pagina.margem + 6, linhaY - 3, larguraUtil - 12, 11, 1.5, 1.5, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(...cores.texto);
+      doc.text(`Mensalidade ${parcela.numero || "-"} • ${planoNome}`, pagina.margem + 10, linhaY + 1);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.2);
+      doc.setTextColor(...cores.suave);
+      doc.text(
+        `Vencimento: ${data(parcela.vencimento)} • ${parcela.diasAtraso} dia(s) em atraso • Valor: ${formatarMoeda(Number(parcela.valor || 0))}`,
+        pagina.margem + 10,
+        linhaY + 5,
+      );
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...cores.vermelho);
+      doc.text(`Atualizado: ${formatarMoeda(parcela.totalAtualizado)}`, pagina.margem + larguraUtil - 10, linhaY + 3, { align: "right" });
+    });
+    if (parcelasAtrasadas.length > 3) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(...cores.suave);
+      doc.text(`+ ${parcelasAtrasadas.length - 3} parcela(s) em atraso não exibida(s) neste resumo.`, pagina.margem + 6, y + alturaFinanceira - 6);
+    }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...cores.vermelho);
+    doc.text(
+      "Como resolver: conferir o recebimento, negociar a cobrança se necessário e registrar o pagamento ou ajuste em Financeiro > Mensalidades.",
+      pagina.margem + 6,
+      y + alturaFinanceira - 2,
+    );
+  }
+  y += alturaFinanceira + 6;
 
   function lista(titulo, itens, mensagemVazia, renderItem) {
     const alturaMinima = 28;
