@@ -663,6 +663,39 @@ async function carregarDetalhamentoFinanceiro(alunoId) {
   }
 }
 
+async function carregarResumoFrequencia(alunoId) {
+  try {
+    const inicio = new Date();
+    inicio.setDate(inicio.getDate() - 60);
+    const hoje = new Date();
+    const { data, error } = await supabaseClient
+      .from("aulas")
+      .select("data, status, presenca")
+      .eq("aluno_id", alunoId)
+      .gte("data", inicio.toISOString().split("T")[0])
+      .lt("data", hoje.toISOString().split("T")[0])
+      .neq("status", "cancelada")
+      .order("data", { ascending: false })
+      .limit(100);
+    if (error) throw error;
+    const aulas = data || [];
+    const registros = aulas.filter((aula) => aula.presenca);
+    const presentes = registros.filter((aula) => aula.presenca === "presente").length;
+    const ausencias = registros.filter((aula) => ["ausente", "falta", "faltou"].includes(aula.presenca)).length;
+    return {
+      periodoDias: 60,
+      aulasRealizadas: aulas.length,
+      presencasRegistradas: registros.length,
+      presentes,
+      ausencias,
+      taxa: registros.length ? Math.round((presentes / registros.length) * 100) : null,
+    };
+  } catch (error) {
+    console.error("Erro ao calcular frequência do aluno:", error);
+    return { periodoDias: 60, aulasRealizadas: 0, presencasRegistradas: 0, presentes: 0, ausencias: 0, taxa: null };
+  }
+}
+
 async function carregarUltimaAula(alunoId) {
   try {
     const hoje = new Date().toISOString().split("T")[0];
@@ -1747,9 +1780,10 @@ async function visualizarDossie(id) {
     const sau = estado.dados.saude.data[alunoIdStr];
     const docs = estado.dados.documentos.data[alunoIdStr] || [];
     const evos = estado.dados.evolucao.data[alunoIdStr] || [];
-    const [statusFinanceiro, detalhamentoFinanceiro, ultimaAula, proximaAula, avaliacoesResult] = await Promise.all([
+    const [statusFinanceiro, detalhamentoFinanceiro, resumoFrequencia, ultimaAula, proximaAula, avaliacoesResult] = await Promise.all([
       carregarStatusFinanceiro(aluno.id),
       carregarDetalhamentoFinanceiro(aluno.id),
+      carregarResumoFrequencia(aluno.id),
       carregarUltimaAula(aluno.id),
       carregarProximaAula(aluno.id),
       supabaseClient
@@ -1769,6 +1803,7 @@ async function visualizarDossie(id) {
       avaliacoes,
       statusFinanceiro,
       financeiro: detalhamentoFinanceiro,
+      frequencia: resumoFrequencia,
       ultimaAula,
       proximaAula,
     };
@@ -1867,6 +1902,25 @@ async function exportarDossiePDF() {
   const parcelasPendentes = financeiro.filter((parcela) => parcela.statusExibicao === "Pendente");
   const totalAtrasado = parcelasAtrasadas.reduce((total, parcela) => total + Number(parcela.totalAtualizado || parcela.valor || 0), 0);
   const totalPendente = parcelasPendentes.reduce((total, parcela) => total + Number(parcela.valor || 0), 0);
+  const frequencia = dados?.frequencia || { aulasRealizadas: 0, presencasRegistradas: 0, presentes: 0, ausencias: 0, taxa: null, periodoDias: 60 };
+  const diasDesdeAvaliacao = avaliacao?.data_avaliacao
+    ? Math.floor((new Date() - new Date(`${avaliacao.data_avaliacao}T12:00:00`)) / 86400000)
+    : null;
+  const avaliacaoPendente = !avaliacao || diasDesdeAvaliacao > 90;
+  const frequenciaBaixa = frequencia.taxa !== null && frequencia.aulasRealizadas >= 4 && frequencia.taxa < 75;
+  const presencasIncompletas = frequencia.aulasRealizadas >= 4 && frequencia.presencasRegistradas === 0;
+  const recomendacoes = [];
+  if (parcelasAtrasadas.length) {
+    recomendacoes.push({ tipo: "Financeiro", titulo: "Resolver parcelas em atraso", detalhe: `${parcelasAtrasadas.length} parcela(s) vencida(s) • ${formatarMoeda(totalAtrasado)}`, acao: "Abrir Financeiro > Mensalidades, conferir a cobrança e registrar pagamento ou negociação." });
+  }
+  if (frequenciaBaixa) {
+    recomendacoes.push({ tipo: "Frequência", titulo: "Entrar em contato sobre baixa frequência", detalhe: `${frequencia.taxa}% de presença nos últimos ${frequencia.periodoDias} dias • ${frequencia.ausencias} falta(s) registrada(s)`, acao: "Verificar o motivo das faltas, contatar o aluno e combinar um plano para recuperar a regularidade." });
+  } else if (presencasIncompletas) {
+    recomendacoes.push({ tipo: "Frequência", titulo: "Atualizar registros de presença", detalhe: `${frequencia.aulasRealizadas} aula(s) no período sem presença registrada`, acao: "Abrir a Agenda e registrar presença ou falta para que o acompanhamento fique confiável." });
+  }
+  if (avaliacaoPendente) {
+    recomendacoes.push({ tipo: "Avaliação", titulo: avaliacao ? "Reavaliar evolução do aluno" : "Realizar avaliação inicial", detalhe: avaliacao ? `Última avaliação há ${diasDesdeAvaliacao} dias` : "Nenhuma avaliação detalhada cadastrada", acao: "Abrir Avaliações, realizar a avaliação física e registrar objetivo, métricas e nível de dor." });
+  }
   const statusTexto = statusFinanceiro === "em-dia" ? "Em dia" : statusFinanceiro === "atrasado" ? "Atrasado" : "Pendente";
   const statusCor = statusFinanceiro === "em-dia" ? cores.verdeEscuro : statusFinanceiro === "atrasado" ? cores.vermelho : cores.amarelo;
   const statusFundo = statusFinanceiro === "em-dia" ? cores.verdeSuave : statusFinanceiro === "atrasado" ? cores.vermelhoFundo : cores.amareloFundo;
@@ -2139,6 +2193,42 @@ async function exportarDossiePDF() {
     );
   }
   y += alturaFinanceira + 6;
+
+  const alturaRecomendacoes = recomendacoes.length ? 32 + recomendacoes.length * 21 : 34;
+  garantirEspaco(alturaRecomendacoes);
+  cartao(
+    pagina.margem,
+    y,
+    larguraUtil,
+    alturaRecomendacoes,
+    recomendacoes.length ? "PLANO DE AÇÃO • PRÓXIMOS PASSOS" : "ACOMPANHAMENTO • NENHUMA AÇÃO PENDENTE",
+    {
+      fundo: recomendacoes.length ? [255, 250, 240] : cores.verdeSuave,
+      corTitulo: recomendacoes.length ? cores.amarelo : cores.verdeEscuro,
+      linha: true,
+    },
+  );
+  if (!recomendacoes.length) {
+    textoQuebrado("Não há outras recomendações automáticas para este aluno no momento.", pagina.margem + 6, y + 22, larguraUtil - 12, 8.5, cores.texto);
+  } else {
+    recomendacoes.forEach((recomendacao, indice) => {
+      const linhaY = y + 18 + indice * 21;
+      const corTipo = recomendacao.tipo === "Financeiro" ? cores.vermelho : recomendacao.tipo === "Frequência" ? cores.amarelo : cores.verde;
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(pagina.margem + 6, linhaY, larguraUtil - 12, 17, 1.5, 1.5, "F");
+      doc.setFillColor(...corTipo);
+      doc.roundedRect(pagina.margem + 9, linhaY + 3, 2, 11, 1, 1, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(...cores.texto);
+      doc.text(`${recomendacao.tipo}: ${recomendacao.titulo}`, pagina.margem + 15, linhaY + 6);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.1);
+      doc.setTextColor(...cores.suave);
+      doc.text(`${recomendacao.detalhe} • Ação: ${recomendacao.acao}`, pagina.margem + 15, linhaY + 11, { maxWidth: larguraUtil - 25 });
+    });
+  }
+  y += alturaRecomendacoes + 6;
 
   function lista(titulo, itens, mensagemVazia, renderItem) {
     const alturaMinima = 28;
