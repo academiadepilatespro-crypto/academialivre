@@ -446,7 +446,7 @@ const conhecimento = {
           titulo: "Abrir dossiê",
           texto:
             "Na linha do aluno, clique no botão de 'olho' 👁️. O modal exibe dados pessoais, endereço, saúde, financeiro, agenda, documentos e evoluções.",
-          exemplos: ["O botão 'Exportar PDF' está em desenvolvimento."],
+          exemplos: ["Dentro do dossiê, clique em 'Exportar PDF' para baixar os dados consolidados do aluno."],
         },
       ],
       links: [],
@@ -1552,7 +1552,7 @@ const conhecimento = {
         {
           titulo: "Exportar",
           texto:
-            "No modal, há um botão 'Exportar PDF' para gerar um arquivo com a ficha (funcionalidade em desenvolvimento, exibe toast de sucesso).",
+            "No modal da ficha, clique em 'Exportar PDF' para baixar um arquivo com as recomendações, exercícios e pontos de atenção.",
           exemplos: [],
         },
       ],

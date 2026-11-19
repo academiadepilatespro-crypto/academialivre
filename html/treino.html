@@ -3432,20 +3432,130 @@
         }
       }
 
+      function nomeArquivoSeguro(valor) {
+        return String(valor || "arquivo")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/gi, "_")
+          .replace(/^_|_$/g, "")
+          .toLowerCase();
+      }
+
+      function criarDocumentoPDF(titulo, subtitulo) {
+        if (!window.jspdf?.jsPDF) {
+          mostrarToast("Biblioteca de PDF indisponível", "error");
+          return null;
+        }
+        const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
+        doc.setTextColor(47, 107, 87);
+        doc.setFontSize(18);
+        doc.text(titulo, 14, 18);
+        doc.setTextColor(100, 115, 110);
+        doc.setFontSize(9);
+        doc.text(
+          subtitulo || `Gerado em ${new Date().toLocaleString("pt-BR")}`,
+          14,
+          25,
+        );
+        return doc;
+      }
+
       function exportarPlano(id) {
-        mostrarToast("PDF gerado com sucesso!", "success");
+        const plano = estado.planosSalvos.find((item) => item.id === id);
+        if (!plano) {
+          mostrarToast("Plano não encontrado", "error");
+          return;
+        }
+        const doc = criarDocumentoPDF(
+          `Plano: ${plano.nome}`,
+          `${plano.aluno_nome} • ${formatarData(plano.data_inicio)} até ${plano.data_fim ? formatarData(plano.data_fim) : "sem data final"}`,
+        );
+        if (!doc) return;
+        const linhas = plano.atribuicoes.map((attr) => {
+          const aula = estado.aulas.find((item) => item.id === attr.aula_id);
+          const treino = attr.treino_id
+            ? estado.treinos.find((item) => item.id === attr.treino_id)
+            : null;
+          return [
+            aula ? formatarData(aula.data) : "-",
+            aula?.horario || "-",
+            aula?.foco || "-",
+            treino?.nome || "Pendente",
+          ];
+        });
+        doc.autoTable({
+          startY: 32,
+          head: [["Data", "Horário", "Foco", "Treino"]],
+          body: linhas.length ? linhas : [["-", "-", "-", "Nenhuma aula atribuída"]],
+          theme: "grid",
+          headStyles: { fillColor: [47, 107, 87] },
+          styles: { fontSize: 9, cellPadding: 3 },
+        });
+        doc.save(`plano_${nomeArquivoSeguro(plano.nome)}.pdf`);
+        mostrarToast("Plano exportado em PDF", "success");
       }
 
       function exportarTreinoPDF(id) {
-        mostrarToast("PDF do treino gerado!", "success");
+        const treino = estado.treinos.find((item) => item.id === id);
+        if (!treino) {
+          mostrarToast("Treino não encontrado", "error");
+          return;
+        }
+        const aluno = estado.alunos.find((item) => item.id === treino.aluno_id);
+        const doc = criarDocumentoPDF(
+          `Ficha de treino: ${treino.nome}`,
+          `${aluno?.nome || "Aluno"} • criada em ${formatarData(treino.criado_em)}`,
+        );
+        if (!doc) return;
+        const linhas = (treino.exercicios || []).map((ex) => [
+          ex.nome || "-",
+          ex.equipamento || "-",
+          ex.series || "-",
+          ex.repeticoes || "-",
+          ex.carga || "-",
+          ex.obs || "-",
+        ]);
+        doc.autoTable({
+          startY: 32,
+          head: [["Exercício", "Equipamento", "Séries", "Repetições", "Carga/Mola", "Observação"]],
+          body: linhas.length ? linhas : [["Nenhum exercício cadastrado", "-", "-", "-", "-", "-"]],
+          theme: "grid",
+          headStyles: { fillColor: [47, 107, 87] },
+          styles: { fontSize: 8, cellPadding: 2 },
+        });
+        doc.save(`treino_${nomeArquivoSeguro(treino.nome)}.pdf`);
+        mostrarToast("Ficha de treino exportada em PDF", "success");
       }
 
       function exportarPlanoAtualPDF() {
-        mostrarToast("PDF gerado com sucesso!", "success");
+        if (!estado.planoAtual?.id) {
+          mostrarToast("Salve o plano antes de exportar", "warning");
+          return;
+        }
+        exportarPlano(estado.planoAtual.id);
       }
 
       function exportarRelatorio() {
-        mostrarToast("Relatório exportado com sucesso!", "success");
+        const doc = criarDocumentoPDF("Relatório de planos e treinos");
+        if (!doc) return;
+        const linhas = estado.planosSalvos.map((plano) => [
+          plano.aluno_nome || "-",
+          plano.nome || "-",
+          formatarData(plano.data_inicio),
+          plano.data_fim ? formatarData(plano.data_fim) : "-",
+          `${plano.atribuicoes.filter((item) => item.treino_id).length}/${plano.atribuicoes.length}`,
+          plano.ativo ? "Ativo" : "Inativo",
+        ]);
+        doc.autoTable({
+          startY: 32,
+          head: [["Aluno", "Plano", "Início", "Fim", "Treinos", "Status"]],
+          body: linhas.length ? linhas : [["Nenhum plano encontrado", "-", "-", "-", "-", "-"]],
+          theme: "grid",
+          headStyles: { fillColor: [47, 107, 87] },
+          styles: { fontSize: 9, cellPadding: 3 },
+        });
+        doc.save(`relatorio_treinos_${new Date().toISOString().split("T")[0]}.pdf`);
+        mostrarToast("Relatório exportado em PDF", "success");
       }
 
       // ============================================================

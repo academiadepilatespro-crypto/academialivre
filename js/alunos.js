@@ -59,6 +59,8 @@ const estado = {
   },
   alunosSelecionados: new Set(),
   timeoutBusca: null,
+  agendaModalAlunoId: null,
+  agendaModalData: new Date(),
 };
 
 // ============================================================
@@ -1684,6 +1686,7 @@ async function toggleStatusAluno(id, statusAtual) {
 // ============================================================
 async function visualizarDossie(id) {
   const alunoIdStr = String(id);
+  estado.alunoAtual = alunoIdStr;
   const aluno = estado.dados.alunos.data.find(
     (a) => String(a.id) === alunoIdStr,
   );
@@ -1735,7 +1738,50 @@ async function visualizarDossie(id) {
 }
 
 function exportarDossiePDF() {
-  mostrarToast("Funcionalidade em desenvolvimento", "info");
+  const conteudo = document.getElementById("conteudoDossie");
+  const alunoId = estado.alunoAtual;
+  if (!conteudo || !conteudo.innerText.trim()) {
+    mostrarToast("Abra o dossiê de um aluno antes de exportar", "error");
+    return;
+  }
+  if (!window.jspdf?.jsPDF) {
+    mostrarToast("Biblioteca de PDF indisponível", "error");
+    return;
+  }
+  const aluno = estado.dados.alunos.data.find(
+    (item) => String(item.id) === String(alunoId),
+  );
+  const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
+  const margem = 14;
+  const largura = doc.internal.pageSize.getWidth() - margem * 2;
+  doc.setTextColor(47, 107, 87);
+  doc.setFontSize(18);
+  doc.text("Dossiê do aluno", margem, 18);
+  doc.setTextColor(100, 115, 110);
+  doc.setFontSize(9);
+  doc.text(
+    `Gerado em ${new Date().toLocaleString("pt-BR")} • ${aluno?.nome || "Aluno"}`,
+    margem,
+    25,
+  );
+  doc.setDrawColor(220, 229, 225);
+  doc.line(margem, 29, margem + largura, 29);
+  doc.setTextColor(37, 51, 46);
+  doc.setFontSize(10);
+  const linhas = doc.splitTextToSize(conteudo.innerText.trim(), largura);
+  let y = 38;
+  linhas.forEach((linha) => {
+    if (y > 280) {
+      doc.addPage();
+      y = 18;
+    }
+    doc.text(linha, margem, y);
+    y += 5;
+  });
+  doc.save(
+    `dossie_${(aluno?.nome || "aluno").replace(/[^a-z0-9]+/gi, "_")}.pdf`,
+  );
+  mostrarToast("Dossiê exportado em PDF", "success");
 }
 
 // ============================================================
@@ -1756,18 +1802,24 @@ function abrirModalAgenda(alunoId = null) {
     mostrarToast("Selecione um aluno primeiro", "error");
     return;
   }
-  carregarAulasAlunoModal(id);
+  estado.agendaModalAlunoId = id;
+  estado.agendaModalData = new Date();
+  carregarAulasAlunoModal(id, estado.agendaModalData);
   document.getElementById("modalAgenda").classList.add("show");
 }
 
-async function carregarAulasAlunoModal(alunoId) {
+async function carregarAulasAlunoModal(alunoId, dataFiltro = estado.agendaModalData) {
   const listaDiv = document.getElementById("listaAulasAgenda");
   listaDiv.innerHTML = '<p class="empty-state">Carregando aulas...</p>';
+  const dataIso = dataFiltro.toISOString().split("T")[0];
+  const label = document.getElementById("agendaDataAtual");
+  if (label) label.textContent = dataFiltro.toLocaleDateString("pt-BR");
   try {
     const { data, error } = await supabaseClient
       .from("aulas")
       .select("data, horario, status, presenca")
       .eq("aluno_id", alunoId)
+      .eq("data", dataIso)
       .order("data", { ascending: true });
     if (error) throw error;
     if (!data || data.length === 0) {
@@ -1796,7 +1848,19 @@ async function carregarAulasAlunoModal(alunoId) {
 }
 
 function navegarAgenda(direcao) {
-  mostrarToast("Navegação em desenvolvimento", "info");
+  if (!estado.agendaModalAlunoId) return;
+  if (direcao === "hoje") estado.agendaModalData = new Date();
+  else {
+    const deslocamento = direcao === "anterior" ? -1 : 1;
+    estado.agendaModalData = new Date(estado.agendaModalData);
+    estado.agendaModalData.setDate(
+      estado.agendaModalData.getDate() + deslocamento,
+    );
+  }
+  carregarAulasAlunoModal(
+    estado.agendaModalAlunoId,
+    estado.agendaModalData,
+  );
 }
 
 function abrirModalFinanceiro(alunoId = null) {
@@ -1892,13 +1956,65 @@ async function carregarFinanceiroAlunoModal(alunoId) {
   }
 }
 
-function exportarDadosAluno() {
+async function exportarDadosAluno() {
   const id = estado.alunoAtual;
   if (!id) {
     mostrarToast("Selecione um aluno", "error");
     return;
   }
-  mostrarToast("Exportação em desenvolvimento", "info");
+  const aluno = estado.dados.alunos.data.find(
+    (item) => String(item.id) === String(id),
+  );
+  if (!aluno || !window.jspdf?.jsPDF) {
+    mostrarToast("Não foi possível preparar a exportação", "error");
+    return;
+  }
+  const endereco = estado.dados.enderecos.data[String(id)];
+  const saude = estado.dados.saude.data[String(id)];
+  const plano = estado.dados.planos.data.find(
+    (item) => item.aluno_id === aluno.id && item.status === "ativo",
+  );
+  const doc = new window.jspdf.jsPDF();
+  doc.setTextColor(47, 107, 87);
+  doc.setFontSize(18);
+  doc.text("Dados do aluno", 14, 18);
+  const linhas = [
+    ["Nome", aluno.nome],
+    ["CPF", aluno.cpf || "Não informado"],
+    ["Telefone", aluno.telefone || "Não informado"],
+    ["E-mail", aluno.email || "Não informado"],
+    ["Nascimento", formatarData(aluno.nascimento)],
+    ["Status", aluno.ativo ? "Ativo" : "Inativo"],
+    ["Plano ativo", plano?.plano || "Não informado"],
+    [
+      "Endereço",
+      endereco
+        ? `${endereco.endereco || ""}, ${endereco.numero || ""} - ${endereco.cidade || ""}/${endereco.estado || ""}`
+        : "Não informado",
+    ],
+    ["Alergias", saude?.alergias || "Nenhuma informada"],
+    ["Contato de emergência", saude?.contato_emergencia || "Não informado"],
+  ];
+  if (doc.autoTable) {
+    doc.autoTable({
+      startY: 28,
+      head: [["Campo", "Informação"]],
+      body: linhas,
+      theme: "grid",
+      headStyles: { fillColor: [47, 107, 87] },
+      styles: { fontSize: 10, cellPadding: 3 },
+    });
+  } else {
+    doc.setTextColor(37, 51, 46);
+    doc.setFontSize(10);
+    linhas.forEach(([campo, valor], index) => {
+      doc.text(`${campo}: ${valor || "-"}`, 14, 30 + index * 8);
+    });
+  }
+  doc.save(
+    `dados_${(aluno.nome || "aluno").replace(/[^a-z0-9]+/gi, "_")}.pdf`,
+  );
+  mostrarToast("Dados do aluno exportados em PDF", "success");
 }
 
 function irParaAvaliacao() {
