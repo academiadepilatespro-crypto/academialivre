@@ -3,7 +3,7 @@ import { AlertTriangle, ArrowRight, BarChart3, CalendarDays, CheckCircle2, Clock
 import { supabase, Usuario } from "./lib/supabase";
 import AppSidebar from "./AppSidebar";
 
-type View = "dashboard" | "agenda" | "students" | "finance" | "reports" | "settings";
+type View = "dashboard" | "agenda" | "students" | "memberships" | "finance" | "reports" | "settings";
 type PeriodKey = "7" | "30" | "90" | "year";
 type Lesson = { id: number; data: string; horario: string; status: string | null; presenca: string | null; aluno_id: number | null };
 type Student = { id: number; nome: string; ativo: boolean; criado_em?: string };

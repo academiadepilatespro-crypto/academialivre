@@ -30,8 +30,9 @@ import SettingsScreen from "./SettingsScreen";
 import StudentsScreen from "./StudentsScreen";
 import FinanceScreen from "./FinanceScreen";
 import ReportsScreen from "./ReportsScreen";
+import MembershipsScreen from "./MembershipsScreen";
 
-type View = "login" | "first-access" | "dashboard" | "agenda" | "students" | "finance" | "reports" | "settings";
+type View = "login" | "first-access" | "dashboard" | "agenda" | "students" | "memberships" | "finance" | "reports" | "settings";
 type Feedback = { type: "error" | "success"; message: string };
 type ProfileForm = { nome: string; telefone: string; novaSenha: string; confirmarSenha: string };
 type Aula = { id: number; data: string; horario: string; status: string; presenca: string | null; aluno: { id: number; nome: string } | null };
@@ -150,6 +151,7 @@ function App() {
   if (usuario && view === "dashboard") return <DashboardScreen usuario={usuario} onLogout={handleLogout} onNavigate={setView} />;
   if (usuario && view === "agenda") return <AgendaScreen usuario={usuario} onNavigate={setView} onLogout={handleLogout} />;
   if (usuario && view === "students") return <StudentsScreen usuario={usuario} onNavigate={setView} onLogout={handleLogout} />;
+  if (usuario && view === "memberships") return <MembershipsScreen usuario={usuario} onNavigate={setView} onLogout={handleLogout} />;
   if (usuario && view === "finance") return <FinanceScreen usuario={usuario} onNavigate={setView} onLogout={handleLogout} />;
   if (usuario && view === "reports") return <ReportsScreen usuario={usuario} onNavigate={setView} onLogout={handleLogout} />;
   if (usuario && view === "settings") return <SettingsScreen usuario={usuario} onNavigate={setView} onLogout={handleLogout} />;

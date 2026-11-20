@@ -3,7 +3,7 @@ import { AlertTriangle, ArrowLeft, ArrowRight, CalendarDays, Check, ChevronRight
 import { supabase, Usuario } from "./lib/supabase";
 import AppSidebar from "./AppSidebar";
 
-type View = "dashboard" | "agenda" | "students" | "finance" | "reports" | "settings";
+type View = "dashboard" | "agenda" | "students" | "memberships" | "finance" | "reports" | "settings";
 type Parcel = { id: number; mensalidade_id: number; numero: number; valor: number; vencimento: string; data_pagamento: string | null; forma: string | null; status: string };
 type Contract = { id: number; aluno_id: number; plano: string; valor_total: number; status: string; ativo: boolean };
 type Student = { id: number; nome: string };

@@ -20,7 +20,7 @@ function age(value: string) { if (!value) return ""; const birthday = new Date(`
 function daysSince(value: string | null) { return value ? Math.floor((Date.now() - new Date(`${value.slice(0, 10)}T12:00:00`).getTime()) / 86400000) : null; }
 function evaluationProgress(value: Evaluation | null) { if (!value) return 0; const keys = ["objetivo_principal", "medico_responsavel", "outras_doencas", "restricoes_movimento", "postura_em_pe", "queixas_dor", "nivel_atividade_fisica", "observacoes_gerais", "proxima_reavaliacao"]; return Math.round(keys.filter((key) => value[key] !== null && value[key] !== "" && value[key] !== false).length / keys.length * 100); }
 
-export default function StudentsScreen({ usuario, onNavigate, onLogout }: { usuario: Usuario; onNavigate: (view: "dashboard" | "agenda" | "students" | "finance" | "reports" | "settings") => void; onLogout: () => void }) {
+export default function StudentsScreen({ usuario, onNavigate, onLogout }: { usuario: Usuario; onNavigate: (view: "dashboard" | "agenda" | "students" | "memberships" | "finance" | "reports" | "settings") => void; onLogout: () => void }) {
   const [students, setStudents] = useState<Student[]>([]);
   const [meta, setMeta] = useState<Record<number, StudentMeta>>({});
   const [search, setSearch] = useState("");
