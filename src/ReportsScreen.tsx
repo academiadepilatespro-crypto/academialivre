@@ -11,7 +11,7 @@ type Parcel = { id: number; valor: number; vencimento: string; data_pagamento: s
 type Income = { id: number; valor: number; data_vencimento: string; data_recebimento: string | null; forma: string | null; status: string };
 type Expense = { id: number; valor: number; data_vencimento: string; data_pagamento: string | null; forma: string | null; status: string };
 type Evaluation = { id: number; aluno_id: number; data_avaliacao: string; proxima_reavaliacao: string | null };
-type Plan = { id: number; aluno_id: number; plano: string; data_proxima_renovacao: string | null; status: string; ativo: boolean };
+type Plan = { id: number; aluno_id: number; plano: string; data_proxima_renovacao: string | null; status: string };
 type WaitItem = { id: number; aluno_id: number; dia_semana: number; horario: string; posicao: number };
 type EventItem = { id: number; titulo: string; data: string; tipo: string; bloquear_agenda: boolean; ativo: boolean };
 type Goal = { mes: number; ano: number; valor_meta: number; valor_realizado: number | null };
@@ -41,7 +41,7 @@ export default function ReportsScreen({ usuario, onNavigate, onLogout }: { usuar
       supabase.from("outras_receitas").select("id, valor, data_vencimento, data_recebimento, forma, status").limit(2000),
       supabase.from("contas_pagar").select("id, valor, data_vencimento, data_pagamento, forma, status").limit(2000),
       supabase.from("avaliacoes").select("id, aluno_id, data_avaliacao, proxima_reavaliacao").order("data_avaliacao", { ascending: false }).limit(3000),
-      supabase.from("planos_alunos").select("id, aluno_id, plano, data_proxima_renovacao, status, ativo").eq("ativo", true).limit(1500),
+      supabase.from("planos_alunos").select("id, aluno_id, plano, data_proxima_renovacao, status").eq("status", "ativo").limit(1500),
       supabase.from("lista_espera").select("id, aluno_id, dia_semana, horario, posicao").order("posicao", { ascending: true }).limit(1000),
       supabase.from("eventos").select("id, titulo, data, tipo, bloquear_agenda, ativo").eq("ativo", true).order("data", { ascending: true }).limit(300),
       supabase.from("config_estudio").select("capacidade_maxima").eq("id", 1).maybeSingle(),
