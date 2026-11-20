@@ -170,7 +170,6 @@ function App() {
           <h1>Mais tempo para cuidar das pessoas.</h1>
           <p className="story-copy">Sua agenda, seus alunos e as pequenas pendências do dia organizados com leveza — para você cuidar do estúdio sem perder o que importa.</p>
           <div className="story-pills"><span>Agenda em um só lugar</span><span>Rotina mais leve</span></div>
-          <div className="story-glance" aria-hidden="true"><div className="glance-top"><span>Hoje, 20 de novembro</span><span className="glance-live">● ao vivo</span></div><div className="glance-row"><span className="glance-time">09:00</span><span className="glance-avatar">MA</span><span><strong>Mariana Alves</strong><small>Pilates · confirmada</small></span><Check size={17} /></div><div className="glance-row muted-row"><span className="glance-time">10:30</span><span className="glance-avatar soft">LC</span><span><strong>Larissa Costa</strong><small>Pilates · próxima</small></span><ArrowRight size={17} /></div></div>
         </div>
         <div className="story-footer"><span className="dot" /> Feito para pequenos estúdios, com cuidado em cada detalhe.</div>
       </section>
