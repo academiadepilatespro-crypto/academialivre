@@ -306,3 +306,12 @@ h1, h2 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 500; le
 .agenda-day-panel.blocked { border-color: #ead8a8; background: #fffdf8; }
 .agenda-day-panel.blocked .agenda-day-heading strong { color: #916f3d; }
 @media (max-width: 700px) { .agenda-main-shell .mobile-menu { display: inline-flex; } }
+
+/* Agenda objetiva: uma única hierarquia de título e controles mais próximos */
+.agenda-main-shell { padding-top: 30px; }
+.agenda-main-shell .agenda-page-head { align-items: center; }
+.agenda-main-shell .agenda-page-head .eyebrow { margin-bottom: 9px; }
+.agenda-main-shell .agenda-page-head h1 { font-size: clamp(34px, 4vw, 50px); }
+.agenda-main-shell .agenda-page-head > div:first-child > p:last-child { margin-top: 9px; }
+.agenda-main-shell .agenda-toolbar { margin-top: 26px; }
+.agenda-main-shell .agenda-feedback { margin-top: 14px; }
