@@ -45,7 +45,7 @@ export default function FinanceScreen({ usuario, onNavigate, onLogout }: { usuar
       supabase.from("mensalidades").select("id, aluno_id, plano, valor_total, status, ativo").limit(1500),
       supabase.from("alunos").select("id, nome").limit(1000),
       supabase.from("outras_receitas").select("id, descricao, cliente, valor, data_recebimento, data_vencimento, status, categoria").order("data_vencimento", { ascending: true }).limit(1500),
-      supabase.from("contas_pagar").select("id, descricao, fornecedor, valor, valor_pago, data_pagamento, data_vencimento, status, categoria").order("data_vencimento", { ascending: true }).limit(1500),
+      supabase.from("contas_pagar").select("id, descricao, fornecedor, valor, data_pagamento, data_vencimento, status, categoria").order("data_vencimento", { ascending: true }).limit(1500),
       supabase.from("metas").select("valor_meta, mes, ano").limit(100),
     ]);
     const errors = [parcelQuery, contractQuery, studentQuery, incomeQuery, expenseQuery, goalQuery].filter((query) => query.error);
