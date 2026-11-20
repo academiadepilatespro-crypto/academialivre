@@ -14,7 +14,7 @@ function localDate(date = new Date()) { return `${date.getFullYear()}-${String(d
 function formatDate(value: string) { if (!value) return ""; return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric" }).format(new Date(`${value}T12:00:00`)); }
 function emptyHoliday(): HolidayForm { return { id: null, titulo: "", data: localDate(), descricao: "", recorrente: false, bloquear_agenda: true }; }
 
-export default function SettingsScreen({ usuario, onNavigate, onLogout }: { usuario: Usuario; onNavigate: (view: "dashboard" | "agenda" | "students" | "settings") => void; onLogout: () => void }) {
+export default function SettingsScreen({ usuario, onNavigate, onLogout }: { usuario: Usuario; onNavigate: (view: "dashboard" | "agenda" | "students" | "finance" | "settings") => void; onLogout: () => void }) {
   const [config, setConfig] = useState<Config>(DEFAULT_CONFIG);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [holidayForm, setHolidayForm] = useState<HolidayForm>(emptyHoliday());
