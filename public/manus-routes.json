@@ -1,1 +1,1 @@
-{"routes":[{"path":"/","title":"Entrar"},{"path":"/primeiro-acesso","title":"Completar cadastro"}]}
+{"routes":[{"path":"/","title":"Entrar"},{"path":"/primeiro-acesso","title":"Completar cadastro"},{"path":"/relatorios","title":"Relatórios"}]}

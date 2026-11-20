@@ -46,7 +46,7 @@ function minutes(value: string) { const [hour, minute] = value.slice(0, 5).split
 function dayOfWeek(value: string) { const day = fromDate(value).getDay(); return day === 0 ? 7 : day; }
 function emptyForm(date = localDate(), defaultDuration = 60): FormState { return { id: null, alunoId: "", data: date, horario: "09:00", duracao: String(defaultDuration), status: "confirmada", presenca: "", foco: "", observacoes: "", originalId: null, tipo: "avulsa", planoId: "", dias: [], periodoMeses: "12", totalSessoes: "20", dataFim: addDays(date, 365), pausaInicio: "", pausaFim: "" }; }
 
-export default function AgendaScreen({ usuario, onNavigate, onLogout }: { usuario: Usuario; onNavigate: (view: "dashboard" | "agenda" | "students" | "finance" | "settings") => void; onLogout: () => void }) {
+export default function AgendaScreen({ usuario, onNavigate, onLogout }: { usuario: Usuario; onNavigate: (view: "dashboard" | "agenda" | "students" | "finance" | "reports" | "settings") => void; onLogout: () => void }) {
   const [view, setView] = useState<ViewMode>("dia");
   const [cursor, setCursor] = useState(new Date());
   const [classes, setClasses] = useState<ClassItem[]>([]);
