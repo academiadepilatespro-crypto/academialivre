@@ -114,6 +114,30 @@ h1, h2 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 500; le
 .stat-icon.green { color: #47795e; background: #e9f2e4; }
 .stat-icon.blue { color: #5a7790; background: #e9f0f5; }
 .stat-icon.gold { color: #ad7d40; background: #fbf0dc; }
+.priority-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr); gap: 18px; margin-bottom: 18px; }
+.priority-grid .dashboard-card { min-height: 244px; }
+.section-kicker { display: flex; align-items: center; gap: 6px; }
+.week-badge { padding: 6px 9px; border-radius: 99px; color: #66816d; background: #edf5e9; font-size: 10px; font-weight: 700; }
+.birthday-list { display: flex; flex-direction: column; }
+.birthday-item { display: flex; align-items: center; gap: 10px; min-height: 53px; padding: 5px 8px; border-top: 1px solid #edf0eb; }
+.birthday-item > span:nth-child(2) { flex: 1; min-width: 0; }
+.birthday-item strong, .birthday-item small { display: block; }
+.birthday-item strong { overflow: hidden; color: #335047; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.birthday-item small { margin-top: 3px; color: #94a097; font-size: 10px; }
+.birthday-item b { color: #809087; font-size: 10px; white-space: nowrap; }
+.birthday-item .student-avatar { width: 30px; height: 30px; border-radius: 10px; }
+.birthday-item.birthday-today { margin: 0 -7px; padding: 8px; border: 1px solid #ead8a8; border-radius: 12px; background: #fff9e9; box-shadow: 0 7px 18px rgba(172, 135, 57, .09); }
+.birthday-today .student-avatar { color: #795c2c; background: #f2dfae; }
+.birthday-today strong, .birthday-today b { color: #765a2c; }
+.birthday-today small { color: #a37d3c; }
+.finance-card { background: #fffdf8; }
+.finance-card .section-heading > svg { color: #c4a15d; }
+.finance-card.has-overdue { border-color: #ead5a8; background: linear-gradient(135deg, #fffdf8, #fff8e8); }
+.finance-card.has-overdue .section-heading > svg { color: #b9783e; }
+.finance-summary { display: flex; flex-direction: column; justify-content: center; min-height: 145px; padding: 4px 4px 0; }
+.finance-summary strong { color: #93652f; font-size: 46px; font-weight: 600; letter-spacing: -.06em; line-height: .95; }
+.finance-summary span { margin-top: 8px; color: #765c38; font-size: 13px; font-weight: 700; }
+.finance-summary p { max-width: 260px; margin: 10px 0 0; color: #9a8b75; font-size: 11px; line-height: 1.5; }
 .dashboard-columns { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr); gap: 18px; }
 .dashboard-card { min-width: 0; padding: 22px; border: 1px solid #e7ebe4; border-radius: 17px; background: #fff; }
 .section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 19px; }
@@ -154,6 +178,6 @@ h1, h2 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 500; le
 .help-strip strong, .help-strip span { display: block; }
 .help-strip strong { color: #3e5d4c; font-size: 12px; }
 .help-strip span { margin-top: 3px; color: #829287; font-size: 11px; }
-@media (max-width: 980px) { .dashboard-sidebar { flex-basis: 205px; } .dashboard-main { padding-left: 26px; padding-right: 26px; } .dashboard-columns { grid-template-columns: 1fr; } }
+@media (max-width: 980px) { .dashboard-sidebar { flex-basis: 205px; } .dashboard-main { padding-left: 26px; padding-right: 26px; } .priority-grid, .dashboard-columns { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { .dashboard-sidebar { position: fixed; z-index: 20; left: -250px; width: 232px; transition: left .25s; } .dashboard-sidebar.open { left: 0; box-shadow: 15px 0 40px rgba(21, 52, 42, .2); } .dashboard-main { width: 100%; padding: 22px 17px 35px; } .mobile-menu { display: inline-flex; } .dashboard-header { align-items: flex-start; } .dashboard-header > div { flex: 1; } .dashboard-header h1 { font-size: 31px; } .header-profile { padding: 0; border: 0; background: transparent; } .header-profile > span:nth-child(2), .header-profile > svg { display: none; } .dashboard-intro { display: block; margin-top: 31px; padding: 23px 20px; } .next-glance { min-width: 0; margin-top: 20px; } .dashboard-stats { grid-template-columns: 1fr; gap: 9px; } .stat-card { min-height: 72px; } .help-strip { align-items: flex-start; flex-wrap: wrap; } .help-strip .subtle-button { margin-left: 47px; } }
 @media (max-width: 420px) { .dashboard-header h1 { font-size: 27px; } .dashboard-kicker { font-size: 10px; } .dashboard-card { padding: 18px 15px; } .dashboard-intro h2 { font-size: 25px; } }
