@@ -49,7 +49,7 @@ export default function SettingsScreen({ usuario, onNavigate, onLogout }: { usua
     if (lunchStart && (lunchStart < config.horario_abertura || lunchEnd > config.horario_fechamento)) { notify("O intervalo de almoço deve ficar dentro do horário de funcionamento.", "error"); return; }
     if (![30, 60, 90].includes(Number(config.duracao_padrao))) { notify("Escolha uma duração padrão válida.", "error"); return; }
     setSavingConfig(true);
-    const { error } = await supabase.from("config_estudio").upsert({ id: 1, horario_abertura: `${config.horario_abertura.slice(0, 5)}:00`, horario_fechamento: `${config.horario_fechamento.slice(0, 5)}:00`, intervalo_almoco_inicio: lunchStart ? `${lunchStart.slice(0, 5)}:00` : null, intervalo_almoco_fim: lunchEnd ? `${lunchEnd.slice(0, 5)}:00` : null, duracao_padrao: Number(config.duracao_padrao), dias_funcionamento: config.dias_funcionamento, atualizado_em: new Date().toISOString() }, { onConflict: "id" });
+    const { error } = await supabase.from("config_estudio").update({ horario_abertura: `${config.horario_abertura.slice(0, 5)}:00`, horario_fechamento: `${config.horario_fechamento.slice(0, 5)}:00`, intervalo_almoco_inicio: lunchStart ? `${lunchStart.slice(0, 5)}:00` : null, intervalo_almoco_fim: lunchEnd ? `${lunchEnd.slice(0, 5)}:00` : null, duracao_padrao: Number(config.duracao_padrao), dias_funcionamento: config.dias_funcionamento, atualizado_em: new Date().toISOString() }).eq("id", 1);
     setSavingConfig(false);
     if (error) notify("Não foi possível salvar os horários.", "error"); else notify("Horários da agenda atualizados.", "success");
   }
