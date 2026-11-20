@@ -26,8 +26,9 @@ import {
 import { supabase, Usuario } from "./lib/supabase";
 import AgendaScreen from "./AgendaScreen";
 import AppSidebar from "./AppSidebar";
+import SettingsScreen from "./SettingsScreen";
 
-type View = "login" | "first-access" | "dashboard" | "agenda";
+type View = "login" | "first-access" | "dashboard" | "agenda" | "settings";
 type Feedback = { type: "error" | "success"; message: string };
 type ProfileForm = { nome: string; telefone: string; novaSenha: string; confirmarSenha: string };
 type Aula = { id: number; data: string; horario: string; status: string; presenca: string | null; aluno: { id: number; nome: string } | null };
@@ -145,6 +146,7 @@ function App() {
   if (booting) return <div className="boot-screen"><div className="brand-mark small">AL</div><span>Preparando seu espaço…</span></div>;
   if (usuario && view === "dashboard") return <DashboardScreen usuario={usuario} onLogout={handleLogout} onNavigate={setView} />;
   if (usuario && view === "agenda") return <AgendaScreen usuario={usuario} onNavigate={setView} onLogout={handleLogout} />;
+  if (usuario && view === "settings") return <SettingsScreen usuario={usuario} onNavigate={setView} onLogout={handleLogout} />;
   if (view === "first-access" && usuario) return <FirstAccess profile={profile} setProfile={setProfile} loading={loading} feedback={feedback} onSubmit={handleFirstAccess} />;
 
   return <LoginScreen email={email} senha={senha} mostrarSenha={mostrarSenha} loading={loading} feedback={feedback} setEmail={setEmail} setSenha={setSenha} setMostrarSenha={setMostrarSenha} onSubmit={handleLogin} onForgotPassword={handleForgotPassword} />;

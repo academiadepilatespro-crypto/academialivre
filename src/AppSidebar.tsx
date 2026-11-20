@@ -1,7 +1,7 @@
-import { CalendarDays, LayoutDashboard, LogOut, UsersRound, WalletCards } from "lucide-react";
+import { CalendarDays, LayoutDashboard, LogOut, Settings, UsersRound, WalletCards } from "lucide-react";
 import { Usuario } from "./lib/supabase";
 
-type View = "dashboard" | "agenda";
+type View = "dashboard" | "agenda" | "settings";
 
 function initials(nome: string) {
   return nome.split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase() || "AL";
@@ -18,6 +18,7 @@ export default function AppSidebar({ usuario, active, onNavigate, onLogout, mobi
       <button className={`nav-link ${active === "agenda" ? "active" : ""}`} onClick={() => { onNavigate("agenda"); onClose(); }}><CalendarDays size={18} /> Agenda</button>
       <button className="nav-link" onClick={onClose}><UsersRound size={18} /> Alunos</button>
       <button className="nav-link" onClick={onClose}><WalletCards size={18} /> Financeiro</button>
+      <button className={`nav-link ${active === "settings" ? "active" : ""}`} onClick={() => { onNavigate("settings"); onClose(); }}><Settings size={18} /> Configurações</button>
     </nav>
     <div className="sidebar-bottom">
       <button className="logout-link" onClick={onLogout}><LogOut size={17} /> Sair</button>
