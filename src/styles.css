@@ -457,3 +457,16 @@ h1, h2 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 500; le
 @media (max-width: 900px) { .student-row { grid-template-columns: 42px minmax(140px, 1.2fr) minmax(155px, 1fr) 95px 72px 18px; gap: 9px; padding-left: 16px; padding-right: 16px; }.advanced-filters { flex-wrap: wrap; }.advanced-filters label { flex: 1; min-width: 145px; }.check-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 700px) { .student-row { grid-template-columns: 40px minmax(0, 1fr) 72px; }.student-insights { display: none; }.student-evaluation { display: none; }.student-actions { justify-content: flex-end; }.student-actions .student-action:nth-child(3) { display: none; }.student-chevron { display: none; }.advanced-filters { align-items: stretch; flex-direction: column; }.advanced-filters label { min-width: 0; }.evaluation-modal, .dossier-modal { width: calc(100vw - 24px); padding: 19px; }.dossier-profile { align-items: flex-start; flex-wrap: wrap; }.dossier-profile .outline-button { width: 100%; margin-left: 43px; }.scale-row { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 520px) { .evaluation-section { padding: 13px; }.check-grid { grid-template-columns: 1fr 1fr; }.student-row { padding-left: 12px; padding-right: 12px; }.student-main-info strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.student-action { width: 27px; height: 27px; } }
+
+/* Chips de status com alto contraste e ações sem sobreposição */
+.insight-chip, .student-evaluation { color: #fff; font-weight: 700; }
+.insight-chip.em-dia { color: #fff; background: #2f654f; }
+.insight-chip.pendente { color: #fff; background: #66717a; }
+.insight-chip.atrasado { color: #fff; background: #8f463f; }
+.student-evaluation { color: #fff; background: #536b61; }
+.student-evaluation.done { color: #fff; background: #3d6856; }
+.student-evaluation.pending { color: #fff; background: #66717a; }
+@media (min-width: 901px) {
+  .student-row { grid-template-columns: 44px minmax(190px, 1.3fr) minmax(220px, 1fr) 128px 108px 18px; }
+  .student-actions { min-width: 108px; justify-content: flex-end; }
+}
